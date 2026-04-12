@@ -1,0 +1,2457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Agent Catalog</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   CSS Reset & Variables
+   ═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0f0f23;
+  --bg-secondary: #1a1a3e;
+  --bg-tertiary: #252552;
+  --bg-hover: #2d2d6a;
+  --accent: #6366f1;
+  --accent-light: #a78bfa;
+  --accent-gradient: linear-gradient(135deg, #6366f1, #a78bfa);
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #2d2d6a;
+  --border-light: #3d3d7a;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.5);
+  --transition: 0.2s ease;
+
+  /* Category colors */
+  --cat-code: #6366f1;
+  --cat-research: #22d3ee;
+  --cat-data: #f59e0b;
+  --cat-devops: #ef4444;
+  --cat-content: #10b981;
+  --cat-finance: #f97316;
+  --cat-legal: #8b5cf6;
+  --cat-support: #ec4899;
+  --cat-personal: #14b8a6;
+  --cat-security: #dc2626;
+  --cat-orchestration: #6b7280;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════
+   Header & Navigation
+   ═══════════════════════════════════════════════════ */
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--accent-gradient);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.logo h1 {
+  font-size: 20px;
+  font-weight: 700;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -2px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.header-stats span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-stats .num {
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 0 0;
+}
+
+.tab {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition);
+  font-family: var(--font-sans);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.tab.active {
+  color: var(--accent-light);
+  border-bottom-color: var(--accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════
+   Main Content
+   ═══════════════════════════════════════════════════ */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════
+   Tab 1: Agent Catalog
+   ═══════════════════════════════════════════════════ */
+.search-bar {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 14px 20px 14px 48px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-family: var(--font-sans);
+  transition: border-color var(--transition);
+  outline: none;
+}
+
+.search-bar input::placeholder { color: var(--text-muted); }
+.search-bar input:focus { border-color: var(--accent); }
+
+.search-bar .search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.search-bar .search-count {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Category Pills */
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.cat-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-sans);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cat-pill:hover {
+  border-color: var(--border-light);
+  background: var(--bg-tertiary);
+}
+
+.cat-pill.active {
+  background: var(--cat-color, var(--accent));
+  border-color: var(--cat-color, var(--accent));
+  color: white;
+}
+
+.cat-pill .pill-count {
+  background: rgba(255,255,255,0.15);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.cat-pill.active .pill-count {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Agent Grid */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.agent-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.agent-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--card-accent, var(--accent));
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.agent-card:hover {
+  border-color: var(--border-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.agent-card:hover::before { opacity: 1; }
+
+.agent-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.agent-card-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.agent-card-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.agent-card-desc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.agent-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.agent-card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  overflow: hidden;
+  max-height: 24px;
+}
+
+.agent-card-tag {
+  padding: 2px 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.agent-card-cost {
+  font-family: var(--font-mono);
+  color: var(--success);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Agent Detail Panel */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.detail-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.detail-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(680px, 90vw);
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border);
+  z-index: 201;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.detail-panel.open { transform: translateX(0); }
+
+.detail-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  z-index: 10;
+}
+
+.detail-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.detail-content { padding: 32px; }
+
+.detail-header { margin-bottom: 28px; }
+
+.detail-name {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-fullname {
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.detail-desc {
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.detail-section {
+  margin-bottom: 28px;
+}
+
+.detail-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail-tag {
+  padding: 4px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Prompt code block */
+.prompt-block {
+  position: relative;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.prompt-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.prompt-block pre {
+  padding: 16px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.copy-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-sans);
+}
+
+.copy-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.copy-btn.copied {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+/* Tools list */
+.tools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tool-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.tool-type {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: white;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.tool-type.mcp { background: var(--warning); }
+
+.tool-info { flex: 1; }
+
+.tool-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.tool-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Works with links */
+.works-with-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.works-with-link {
+  padding: 6px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--accent-light);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.works-with-link:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+/* Patterns */
+.patterns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pattern-item {
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.pattern-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--accent-light);
+  margin-bottom: 4px;
+}
+
+.pattern-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Cost table in detail */
+.cost-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cost-detail-table th,
+.cost-detail-table td {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cost-detail-table th {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.cost-detail-table td {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.cost-detail-table .cost-val {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.cost-detail-table .cost-val.free {
+  color: var(--accent-light);
+}
+
+/* ═══════════════════════════════════════════════════
+   Tab 2: Agent Playground
+   ═══════════════════════════════════════════════════ */
+.playground-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.playground-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-select {
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.form-select:focus { border-color: var(--accent); }
+
+.form-select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.enhancement-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.enh-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.enh-badge.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+/* Enhanced prompt display */
+.enhanced-prompt-area {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+
+.enhanced-prompt-area .prompt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.enhanced-prompt-area .prompt-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.enhanced-prompt-area .prompt-body .enh-block {
+  background: rgba(99, 102, 241, 0.08);
+  border-left: 3px solid var(--accent);
+  padding: 8px 12px;
+  margin: 8px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+/* Export output */
+.export-output {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.export-output .export-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.export-output pre {
+  padding: 16px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Tab 3: Cost Calculator
+   ═══════════════════════════════════════════════════ */
+.cost-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+}
+
+.cost-sidebar {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.cost-sidebar h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.cost-agent-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.cost-agent-check:hover { background: var(--bg-tertiary); }
+
+.cost-agent-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.cost-agent-check .check-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.cost-agent-check .check-cat {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.cost-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cost-controls {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.slider-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.slider-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.slider-group input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  height: 6px;
+  cursor: pointer;
+}
+
+.slider-value {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--accent-light);
+  margin-top: 6px;
+}
+
+/* Cost comparison table */
+.cost-table-wrapper {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+}
+
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.cost-table th,
+.cost-table td {
+  padding: 12px 16px;
+  text-align: right;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cost-table th {
+  text-align: right;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg-tertiary);
+  position: sticky;
+  top: 0;
+}
+
+.cost-table th:first-child,
+.cost-table td:first-child { text-align: left; }
+
+.cost-table td {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.cost-table td:first-child {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.cost-table tr:hover td { background: rgba(99, 102, 241, 0.05); }
+
+.cost-cheapest { color: var(--success) !important; font-weight: 700 !important; }
+.cost-expensive { color: var(--danger) !important; }
+
+.cost-table .total-row td {
+  font-weight: 700;
+  border-top: 2px solid var(--accent);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+/* Bar chart */
+.cost-chart {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.cost-chart h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.chart-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chart-label {
+  width: 160px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.chart-bar-container {
+  flex: 1;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  height: 28px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chart-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.chart-bar-value {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chart-bar.cheapest { background: var(--success); }
+.chart-bar.expensive { background: var(--danger); }
+.chart-bar.normal { background: var(--accent); }
+.chart-bar.free { background: var(--accent-light); }
+
+/* Savings callout */
+.savings-callout {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.savings-callout h3 {
+  color: var(--success);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.savings-callout p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.savings-callout .savings-amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--success);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════════════
+   Tab 4: Composition Visualizer
+   ═══════════════════════════════════════════════════ */
+.viz-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+}
+
+.viz-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.viz-sidebar-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.viz-sidebar-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.viz-agent-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.viz-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.viz-diagram-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.viz-diagram-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.viz-diagram-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.viz-diagram-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.viz-diagram-body .mermaid {
+  width: 100%;
+}
+
+.viz-diagram-body .mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.viz-placeholder {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 15px;
+  padding: 60px 20px;
+}
+
+.viz-placeholder p {
+  margin-bottom: 8px;
+}
+
+.viz-mermaid-code {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.viz-mermaid-code .code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.viz-mermaid-code pre {
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.viz-team-cost {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.viz-team-cost h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.viz-cost-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.viz-cost-item {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: center;
+}
+
+.viz-cost-model {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.viz-cost-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent-light);
+}
+
+.viz-cost-value.free { color: var(--success); }
+
+/* Pattern selector */
+.pattern-select-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pattern-opt {
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.pattern-opt:hover {
+  border-color: var(--border-light);
+  background: var(--bg-hover);
+}
+
+.pattern-opt.active {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-light);
+}
+
+/* ═══════════════════════════════════════════════════
+   Shared Components
+   ═══════════════════════════════════════════════════ */
+.btn {
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-sans);
+}
+
+.btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-light);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state p {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+/* ═══════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .cost-layout { grid-template-columns: 1fr; }
+  .viz-layout { grid-template-columns: 1fr; }
+  .playground-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .main { padding: 16px; }
+  .header-inner { padding: 0 16px; }
+  .agent-grid { grid-template-columns: 1fr; }
+  .header-stats { display: none; }
+  .tabs { overflow-x: auto; padding-bottom: 0; }
+  .tab { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
+  .detail-panel { width: 100vw; }
+  .chart-label { width: 100px; font-size: 10px; }
+}
+
+@media (max-width: 480px) {
+  .header-top { flex-direction: column; gap: 8px; align-items: flex-start; }
+  .pattern-select-grid { grid-template-columns: 1fr; }
+  .viz-cost-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     Header
+     ═══════════════════════════════════════════════════ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="logo">
+        <div class="logo-icon">M</div>
+        <div>
+          <h1>Multi-Agent Catalog</h1>
+          <div class="logo-subtitle">Framework-agnostic AI agent definitions</div>
+        </div>
+      </div>
+      <div class="header-stats">
+        <span><span class="num" id="stat-agents">48</span> Agents</span>
+        <span><span class="num" id="stat-categories">11</span> Categories</span>
+        <span><span class="num" id="stat-models">13</span> Models</span>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-tab="catalog">Agent Catalog</button>
+      <button class="tab" data-tab="playground">Playground</button>
+      <button class="tab" data-tab="cost">Cost Calculator</button>
+      <button class="tab" data-tab="visualizer">Composition Visualizer</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════
+     Main Content
+     ═══════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- Tab 1: Agent Catalog -->
+  <div id="tab-catalog" class="tab-content active">
+    <div class="search-bar">
+      <span class="search-icon">&#x1F50D;</span>
+      <input type="text" id="catalog-search" placeholder="Search agents by name, description, or tags...">
+      <span class="search-count" id="search-count"></span>
+    </div>
+    <div class="category-pills" id="category-pills"></div>
+    <div class="agent-grid" id="agent-grid"></div>
+  </div>
+
+  <!-- Tab 2: Playground -->
+  <div id="tab-playground" class="tab-content">
+    <div class="playground-layout">
+      <div class="playground-controls">
+        <div class="form-group">
+          <label>Select Agent</label>
+          <select class="form-select" id="pg-agent-select"></select>
+        </div>
+        <div class="form-group">
+          <label>Enhancement Profile</label>
+          <select class="form-select" id="pg-enhancement-select">
+            <option value="none">None (raw prompt only)</option>
+            <option value="minimal">Minimal (reasoning only)</option>
+            <option value="category">Category (recommended for this agent)</option>
+            <option value="all">All enhancements</option>
+          </select>
+          <div class="enhancement-badges" id="pg-enh-badges"></div>
+        </div>
+        <div class="form-group">
+          <label>Export Format</label>
+          <select class="form-select" id="pg-export-format">
+            <option value="raw">Raw text</option>
+            <option value="claude-code">Claude Code (CLAUDE.md)</option>
+            <option value="codex">Codex (AGENTS.md)</option>
+            <option value="gemini">Gemini (system instruction)</option>
+            <option value="chatgpt">ChatGPT (system message)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top: auto;">
+          <div style="font-size: 13px; color: var(--text-muted); padding: 12px; background: var(--bg-secondary); border-radius: var(--radius); border: 1px solid var(--border);">
+            <div style="margin-bottom: 4px; font-weight: 600; color: var(--text-secondary);">Token estimate</div>
+            <span id="pg-token-estimate" style="font-family: var(--font-mono); color: var(--accent-light);">--</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="enhanced-prompt-area">
+          <div class="prompt-header">
+            <span>Enhanced System Prompt</span>
+            <button class="copy-btn" onclick="copyText(document.getElementById('pg-prompt-body').textContent, this)">Copy</button>
+          </div>
+          <div class="prompt-body" id="pg-prompt-body"></div>
+        </div>
+        <div class="export-output" style="margin-top: 20px;">
+          <div class="export-header">
+            <span id="pg-export-label">Exported Output</span>
+            <button class="copy-btn" onclick="copyText(document.getElementById('pg-export-pre').textContent, this)">Copy</button>
+          </div>
+          <pre id="pg-export-pre"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Cost Calculator -->
+  <div id="tab-cost" class="tab-content">
+    <div class="cost-layout">
+      <div class="cost-sidebar">
+        <h3>Select Agents for Team</h3>
+        <div style="margin-bottom: 12px;">
+          <button class="btn" onclick="costSelectAll()" style="font-size: 11px; padding: 4px 10px; margin-right: 4px;">Select All</button>
+          <button class="btn" onclick="costSelectNone()" style="font-size: 11px; padding: 4px 10px;">Clear</button>
+        </div>
+        <div id="cost-agent-list"></div>
+      </div>
+      <div class="cost-main">
+        <div class="cost-controls">
+          <div class="slider-group">
+            <label>Runs per day</label>
+            <input type="range" id="cost-runs-slider" min="1" max="100" value="10">
+            <div class="slider-value"><span id="cost-runs-value">10</span> runs/day</div>
+          </div>
+          <div class="slider-group" style="max-width: 200px;">
+            <label>Days per month</label>
+            <input type="range" id="cost-days-slider" min="1" max="31" value="22">
+            <div class="slider-value"><span id="cost-days-value">22</span> days/month</div>
+          </div>
+        </div>
+        <div id="cost-empty" class="empty-state">
+          <p>Select agents from the sidebar to calculate costs</p>
+        </div>
+        <div id="cost-results" style="display: none;">
+          <div class="cost-table-wrapper">
+            <table class="cost-table" id="cost-table"></table>
+          </div>
+          <div class="cost-chart" style="margin-top: 20px;">
+            <h3>Monthly Cost Comparison</h3>
+            <div id="cost-chart-bars"></div>
+          </div>
+          <div class="savings-callout" id="cost-savings" style="margin-top: 20px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Composition Visualizer -->
+  <div id="tab-visualizer" class="tab-content">
+    <div class="viz-layout">
+      <div class="viz-sidebar">
+        <div class="viz-sidebar-section">
+          <h3>Select Team Members</h3>
+          <div class="viz-agent-list" id="viz-agent-list"></div>
+        </div>
+        <div class="viz-sidebar-section">
+          <h3>Composition Pattern</h3>
+          <div class="pattern-select-grid" id="viz-pattern-grid"></div>
+        </div>
+      </div>
+      <div class="viz-main">
+        <div class="viz-diagram-container">
+          <div class="viz-diagram-header">
+            <h3 id="viz-diagram-title">Agent Composition</h3>
+            <button class="copy-btn" id="viz-copy-mermaid" style="display:none;" onclick="copyMermaidCode()">Copy Mermaid</button>
+          </div>
+          <div class="viz-diagram-body" id="viz-diagram-body">
+            <div class="viz-placeholder">
+              <p>Select agents and a pattern to generate a diagram</p>
+              <p style="font-size: 13px;">Choose at least 2 agents from the sidebar</p>
+            </div>
+          </div>
+        </div>
+        <div class="viz-mermaid-code" id="viz-mermaid-section" style="display: none;">
+          <div class="code-header">
+            <span>Mermaid Source</span>
+            <button class="copy-btn" onclick="copyMermaidCode()">Copy</button>
+          </div>
+          <pre id="viz-mermaid-pre"></pre>
+        </div>
+        <div class="viz-team-cost" id="viz-team-cost" style="display: none;">
+          <h3>Estimated Team Cost per Run</h3>
+          <div class="viz-cost-grid" id="viz-cost-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Detail Panel (slide-in) -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <button class="detail-close" onclick="closeDetail()">&times;</button>
+  <div class="detail-content" id="detail-content"></div>
+</div>
+
+<!-- Load catalog data -->
+<script src="catalog-data.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   State & Constants
+   ═══════════════════════════════════════════════════ */
+const CAT_COLORS = {
+  code: '#6366f1',
+  research: '#22d3ee',
+  data: '#f59e0b',
+  devops: '#ef4444',
+  content: '#10b981',
+  finance: '#f97316',
+  legal: '#8b5cf6',
+  support: '#ec4899',
+  personal: '#14b8a6',
+  security: '#dc2626',
+  orchestration: '#6b7280'
+};
+
+const PATTERNS = [
+  { id: 'supervisor-worker', label: 'Supervisor-Worker' },
+  { id: 'sequential', label: 'Sequential' },
+  { id: 'parallel', label: 'Parallel' },
+  { id: 'reflection', label: 'Reflection' },
+  { id: 'handoff', label: 'Handoff' },
+  { id: 'group-chat', label: 'Group Chat' },
+  { id: 'dag', label: 'DAG' },
+  { id: 'split-and-merge', label: 'Split & Merge' }
+];
+
+let state = {
+  activeTab: 'catalog',
+  searchQuery: '',
+  activeCategory: null,
+  selectedCostAgents: new Set(),
+  selectedVizAgents: new Set(),
+  selectedPattern: null,
+  currentMermaid: ''
+};
+
+const agents = CATALOG_DATA.agents;
+const pricing = CATALOG_DATA.model_pricing;
+const categories = [...new Set(agents.map(a => a.category))].sort();
+
+/* ═══════════════════════════════════════════════════
+   Utility Functions
+   ═══════════════════════════════════════════════════ */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    }
+  });
+}
+
+function formatCost(val) {
+  if (val === 0) return 'Free';
+  if (val < 0.001) return '<$0.001';
+  if (val < 0.01) return '$' + val.toFixed(4);
+  if (val < 1) return '$' + val.toFixed(3);
+  return '$' + val.toFixed(2);
+}
+
+function calcCost(agent, modelKey) {
+  const p = pricing[modelKey];
+  if (!p) return null;
+  const cp = agent.cost_profile;
+  return (cp.input_tokens / 1_000_000 * p.input) + (cp.output_tokens / 1_000_000 * p.output);
+}
+
+function estimateTokens(text) {
+  return Math.ceil(text.length / 4);
+}
+
+function getCatColor(cat) {
+  return CAT_COLORS[cat] || '#6b7280';
+}
+
+function badgeStyle(cat) {
+  const c = getCatColor(cat);
+  return `background: ${c}22; color: ${c}; border: 1px solid ${c}44;`;
+}
+
+function findAgent(fullName) {
+  return agents.find(a => a.full_name === fullName);
+}
+
+function shortName(fullName) {
+  return fullName.split('/').pop();
+}
+
+/* ═══════════════════════════════════════════════════
+   Tab Navigation
+   ═══════════════════════════════════════════════════ */
+function switchTab(tabId) {
+  state.activeTab = tabId;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabId));
+  history.replaceState(null, '', '#' + tabId);
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+// Hash routing
+function readHash() {
+  const hash = location.hash.replace('#', '');
+  if (['catalog', 'playground', 'cost', 'visualizer'].includes(hash)) {
+    switchTab(hash);
+  }
+}
+window.addEventListener('hashchange', readHash);
+readHash();
+
+/* ═══════════════════════════════════════════════════
+   Tab 1: Agent Catalog
+   ═══════════════════════════════════════════════════ */
+function renderCategoryPills() {
+  const container = document.getElementById('category-pills');
+  const counts = {};
+  agents.forEach(a => { counts[a.category] = (counts[a.category] || 0) + 1; });
+
+  let html = `<button class="cat-pill ${!state.activeCategory ? 'active' : ''}" onclick="filterCategory(null)" style="${!state.activeCategory ? 'background: var(--accent); border-color: var(--accent);' : ''}">
+    All <span class="pill-count">${agents.length}</span>
+  </button>`;
+
+  categories.forEach(cat => {
+    const active = state.activeCategory === cat;
+    const color = getCatColor(cat);
+    html += `<button class="cat-pill ${active ? 'active' : ''}"
+      onclick="filterCategory('${cat}')"
+      style="--cat-color: ${color}; ${active ? `background: ${color}; border-color: ${color}; color: white;` : ''}">
+      ${cat} <span class="pill-count">${counts[cat] || 0}</span>
+    </button>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function filterCategory(cat) {
+  state.activeCategory = cat;
+  renderCategoryPills();
+  renderAgentGrid();
+}
+
+function getFilteredAgents() {
+  let filtered = agents;
+  if (state.activeCategory) {
+    filtered = filtered.filter(a => a.category === state.activeCategory);
+  }
+  if (state.searchQuery) {
+    const q = state.searchQuery.toLowerCase();
+    filtered = filtered.filter(a =>
+      a.name.toLowerCase().includes(q) ||
+      a.full_name.toLowerCase().includes(q) ||
+      a.description.toLowerCase().includes(q) ||
+      a.tags.some(t => t.toLowerCase().includes(q))
+    );
+  }
+  return filtered;
+}
+
+function renderAgentGrid() {
+  const container = document.getElementById('agent-grid');
+  const filtered = getFilteredAgents();
+
+  document.getElementById('search-count').textContent = `${filtered.length} of ${agents.length}`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>No agents match your search</p></div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(agent => {
+    const color = getCatColor(agent.category);
+    const cheapest = getCheapestCost(agent);
+    return `
+      <div class="agent-card" onclick="openDetail('${agent.full_name}')" style="--card-accent: ${color};">
+        <div class="agent-card-header">
+          <span class="agent-card-name">${escapeHtml(agent.name)}</span>
+          <span class="agent-card-badge" style="${badgeStyle(agent.category)}">${agent.category}</span>
+        </div>
+        <div class="agent-card-desc">${escapeHtml(agent.description)}</div>
+        <div class="agent-card-footer">
+          <div class="agent-card-tags">
+            ${agent.tags.slice(0, 3).map(t => `<span class="agent-card-tag">${escapeHtml(t)}</span>`).join('')}
+          </div>
+          <span class="agent-card-cost">from ${cheapest}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function getCheapestCost(agent) {
+  const costs = Object.keys(pricing).map(m => calcCost(agent, m)).filter(c => c !== null);
+  const min = Math.min(...costs);
+  return formatCost(min);
+}
+
+// Search
+document.getElementById('catalog-search').addEventListener('input', (e) => {
+  state.searchQuery = e.target.value;
+  renderAgentGrid();
+});
+
+/* ═══════════════════════════════════════════════════
+   Agent Detail Panel
+   ═══════════════════════════════════════════════════ */
+function openDetail(fullName) {
+  const agent = findAgent(fullName);
+  if (!agent) return;
+
+  const panel = document.getElementById('detail-panel');
+  const overlay = document.getElementById('detail-overlay');
+  const content = document.getElementById('detail-content');
+
+  // Build cost rows
+  const modelKeys = Object.keys(pricing);
+  const costs = modelKeys.map(m => ({ model: m, cost: calcCost(agent, m) })).filter(c => c.cost !== null);
+  costs.sort((a, b) => a.cost - b.cost);
+
+  content.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-name">
+        ${escapeHtml(agent.name)}
+        <span class="agent-card-badge" style="${badgeStyle(agent.category)}">${agent.category}</span>
+      </div>
+      <div class="detail-fullname">${escapeHtml(agent.full_name)}</div>
+      <div class="detail-desc">${escapeHtml(agent.description)}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Tags</div>
+      <div class="detail-tags">
+        ${agent.tags.map(t => `<span class="detail-tag">${escapeHtml(t)}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">System Prompt</div>
+      <div class="prompt-block">
+        <div class="prompt-block-header">
+          <span>system_prompt</span>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(agent.system_prompt).replace(/"/g, '&quot;')}, this)">Copy</button>
+        </div>
+        <pre>${escapeHtml(agent.system_prompt)}</pre>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Tools (${agent.tools.length})</div>
+      <div class="tools-list">
+        ${agent.tools.map(t => `
+          <div class="tool-item">
+            <span class="tool-type ${t.type === 'mcp' ? 'mcp' : ''}">${t.type}</span>
+            <div class="tool-info">
+              <div class="tool-name">${escapeHtml(t.name || t.server || '')}</div>
+              ${t.description ? `<div class="tool-desc">${escapeHtml(t.description)}</div>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Works With</div>
+      <div class="works-with-list">
+        ${agent.works_with.map(w => `
+          <span class="works-with-link" onclick="event.stopPropagation(); openDetail('${w}')">${shortName(w)}</span>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Recommended Patterns</div>
+      <div class="patterns-list">
+        ${agent.recommended_patterns.map(p => `
+          <div class="pattern-item">
+            <div class="pattern-name">${escapeHtml(p.name)}</div>
+            <div class="pattern-desc">${escapeHtml(p.description)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Cost Estimates (per run)</div>
+      <table class="cost-detail-table">
+        <thead>
+          <tr><th>Model</th><th>Input</th><th>Output</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+          ${costs.map(c => {
+            const p = pricing[c.model];
+            const inputCost = agent.cost_profile.input_tokens / 1_000_000 * p.input;
+            const outputCost = agent.cost_profile.output_tokens / 1_000_000 * p.output;
+            return `<tr>
+              <td style="font-family: var(--font-mono); font-size: 12px;">${c.model}</td>
+              <td>${formatCost(inputCost)}</td>
+              <td>${formatCost(outputCost)}</td>
+              <td class="cost-val ${c.cost === 0 ? 'free' : ''}">${formatCost(c.cost)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">
+        Based on ~${agent.cost_profile.input_tokens.toLocaleString()} input + ~${agent.cost_profile.output_tokens.toLocaleString()} output tokens per run
+      </div>
+    </div>
+  `;
+
+  panel.classList.add('open');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDetail();
+});
+
+/* ═══════════════════════════════════════════════════
+   Tab 2: Agent Playground
+   ═══════════════════════════════════════════════════ */
+function initPlayground() {
+  const select = document.getElementById('pg-agent-select');
+  select.innerHTML = agents.map(a =>
+    `<option value="${a.full_name}">${a.name} (${a.category})</option>`
+  ).join('');
+
+  select.addEventListener('change', updatePlayground);
+  document.getElementById('pg-enhancement-select').addEventListener('change', updatePlayground);
+  document.getElementById('pg-export-format').addEventListener('change', updatePlayground);
+
+  updatePlayground();
+}
+
+function getEnhancementKeys(agent, profile) {
+  switch (profile) {
+    case 'none': return [];
+    case 'minimal': return ['reasoning'];
+    case 'category': return CATALOG_DATA.category_profiles[agent.category] || [];
+    case 'all': return CATALOG_DATA.enhancement_names;
+    default: return [];
+  }
+}
+
+function buildEnhancedPrompt(agent, enhKeys) {
+  let parts = [];
+  parts.push({ type: 'base', text: agent.system_prompt.trim() });
+  enhKeys.forEach(key => {
+    if (CATALOG_DATA.enhancements[key]) {
+      parts.push({ type: 'enhancement', key, text: CATALOG_DATA.enhancements[key].trim() });
+    }
+  });
+  return parts;
+}
+
+function exportPrompt(agent, parts, format) {
+  const fullText = parts.map(p => p.text).join('\n\n');
+
+  switch (format) {
+    case 'raw':
+      return fullText;
+    case 'claude-code':
+      return `# CLAUDE.md - ${agent.name}\n\n## Role\n${agent.description}\n\n## System Prompt\n${fullText}\n\n## Tools\n${agent.tools.map(t => `- ${t.name || t.server}: ${t.description || t.type}`).join('\n')}\n`;
+    case 'codex':
+      return `# AGENTS.md - ${agent.name}\n\nAgent: ${agent.full_name}\nCategory: ${agent.category}\nDescription: ${agent.description}\n\n## Instructions\n${fullText}\n\n## Available Tools\n${agent.tools.map(t => `- ${t.name || t.server} (${t.type}): ${t.description || ''}`).join('\n')}\n`;
+    case 'gemini':
+      return `You are "${agent.name}" - ${agent.description}\n\n${fullText}`;
+    case 'chatgpt':
+      return `[System]\nYou are "${agent.name}".\n${agent.description}\n\n${fullText}`;
+    default:
+      return fullText;
+  }
+}
+
+function updatePlayground() {
+  const agentName = document.getElementById('pg-agent-select').value;
+  const enhProfile = document.getElementById('pg-enhancement-select').value;
+  const exportFormat = document.getElementById('pg-export-format').value;
+  const agent = findAgent(agentName);
+
+  if (!agent) return;
+
+  const enhKeys = getEnhancementKeys(agent, enhProfile);
+  const parts = buildEnhancedPrompt(agent, enhKeys);
+
+  // Show enhancement badges
+  const badgesEl = document.getElementById('pg-enh-badges');
+  badgesEl.innerHTML = CATALOG_DATA.enhancement_names.map(name => {
+    const active = enhKeys.includes(name);
+    return `<span class="enh-badge ${active ? 'active' : ''}">${name.replace(/_/g, ' ')}</span>`;
+  }).join('');
+
+  // Render enhanced prompt with highlighted blocks
+  const promptBody = document.getElementById('pg-prompt-body');
+  promptBody.innerHTML = parts.map(p => {
+    if (p.type === 'enhancement') {
+      return `<div class="enh-block"><span style="color: var(--accent-light); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">${p.key.replace(/_/g, ' ')}</span>${escapeHtml(p.text)}</div>`;
+    }
+    return escapeHtml(p.text);
+  }).join('\n\n');
+
+  // Export output
+  const exported = exportPrompt(agent, parts, exportFormat);
+  document.getElementById('pg-export-pre').textContent = exported;
+  document.getElementById('pg-export-label').textContent = `Exported: ${exportFormat}`;
+
+  // Token estimate
+  const fullText = parts.map(p => p.text).join('\n\n');
+  document.getElementById('pg-token-estimate').textContent = `~${estimateTokens(fullText).toLocaleString()} tokens`;
+}
+
+/* ═══════════════════════════════════════════════════
+   Tab 3: Cost Calculator
+   ═══════════════════════════════════════════════════ */
+function initCostCalculator() {
+  const container = document.getElementById('cost-agent-list');
+  let html = '';
+  categories.forEach(cat => {
+    const catAgents = agents.filter(a => a.category === cat);
+    html += `<div style="margin-bottom: 4px; margin-top: 12px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">${cat}</div>`;
+    catAgents.forEach(a => {
+      html += `
+        <label class="cost-agent-check">
+          <input type="checkbox" value="${a.full_name}" onchange="toggleCostAgent('${a.full_name}', this.checked)">
+          <span class="check-name">${a.name}</span>
+          <span class="check-cat" style="${badgeStyle(a.category)}">${a.category}</span>
+        </label>`;
+    });
+  });
+  container.innerHTML = html;
+
+  document.getElementById('cost-runs-slider').addEventListener('input', (e) => {
+    document.getElementById('cost-runs-value').textContent = e.target.value;
+    renderCostResults();
+  });
+  document.getElementById('cost-days-slider').addEventListener('input', (e) => {
+    document.getElementById('cost-days-value').textContent = e.target.value;
+    renderCostResults();
+  });
+}
+
+function toggleCostAgent(fullName, checked) {
+  if (checked) state.selectedCostAgents.add(fullName);
+  else state.selectedCostAgents.delete(fullName);
+  renderCostResults();
+}
+
+function costSelectAll() {
+  agents.forEach(a => state.selectedCostAgents.add(a.full_name));
+  document.querySelectorAll('#cost-agent-list input[type="checkbox"]').forEach(cb => cb.checked = true);
+  renderCostResults();
+}
+
+function costSelectNone() {
+  state.selectedCostAgents.clear();
+  document.querySelectorAll('#cost-agent-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+  renderCostResults();
+}
+
+function renderCostResults() {
+  const selectedAgents = agents.filter(a => state.selectedCostAgents.has(a.full_name));
+  const emptyEl = document.getElementById('cost-empty');
+  const resultsEl = document.getElementById('cost-results');
+
+  if (selectedAgents.length === 0) {
+    emptyEl.style.display = 'block';
+    resultsEl.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  resultsEl.style.display = 'block';
+
+  const runs = parseInt(document.getElementById('cost-runs-slider').value);
+  const days = parseInt(document.getElementById('cost-days-slider').value);
+  const modelKeys = Object.keys(pricing);
+
+  // Build table
+  const table = document.getElementById('cost-table');
+  let thead = '<thead><tr><th>Agent</th>';
+  modelKeys.forEach(m => { thead += `<th>${m}</th>`; });
+  thead += '</tr></thead>';
+
+  // Calculate all costs
+  const allCosts = {};
+  const totals = {};
+  modelKeys.forEach(m => { totals[m] = 0; });
+
+  selectedAgents.forEach(agent => {
+    allCosts[agent.full_name] = {};
+    modelKeys.forEach(m => {
+      const c = calcCost(agent, m);
+      allCosts[agent.full_name][m] = c;
+      if (c !== null) totals[m] += c;
+    });
+  });
+
+  let tbody = '<tbody>';
+  selectedAgents.forEach(agent => {
+    const rowCosts = modelKeys.map(m => allCosts[agent.full_name][m]);
+    const validCosts = rowCosts.filter(c => c !== null);
+    const minCost = Math.min(...validCosts);
+    const maxCost = Math.max(...validCosts.filter(c => c > 0));
+
+    tbody += `<tr><td>${escapeHtml(agent.name)}</td>`;
+    modelKeys.forEach(m => {
+      const c = allCosts[agent.full_name][m];
+      let cls = '';
+      if (c === minCost) cls = 'cost-cheapest';
+      else if (c === maxCost && maxCost > 0) cls = 'cost-expensive';
+      tbody += `<td class="${cls}">${c !== null ? formatCost(c) : '-'}</td>`;
+    });
+    tbody += '</tr>';
+  });
+
+  // Total row
+  const totalValues = modelKeys.map(m => totals[m]);
+  const minTotal = Math.min(...totalValues);
+  const maxTotal = Math.max(...totalValues.filter(v => v > 0));
+
+  tbody += '<tr class="total-row"><td>Total per run</td>';
+  modelKeys.forEach(m => {
+    let cls = '';
+    if (totals[m] === minTotal) cls = 'cost-cheapest';
+    else if (totals[m] === maxTotal && maxTotal > 0) cls = 'cost-expensive';
+    tbody += `<td class="${cls}">${formatCost(totals[m])}</td>`;
+  });
+  tbody += '</tr>';
+
+  // Monthly totals row
+  const monthly = {};
+  modelKeys.forEach(m => { monthly[m] = totals[m] * runs * days; });
+  const minMonthly = Math.min(...Object.values(monthly));
+  const maxMonthly = Math.max(...Object.values(monthly).filter(v => v > 0));
+
+  tbody += '<tr class="total-row"><td>Monthly estimate</td>';
+  modelKeys.forEach(m => {
+    let cls = '';
+    if (monthly[m] === minMonthly) cls = 'cost-cheapest';
+    else if (monthly[m] === maxMonthly && maxMonthly > 0) cls = 'cost-expensive';
+    tbody += `<td class="${cls}">${formatCost(monthly[m])}</td>`;
+  });
+  tbody += '</tr>';
+  tbody += '</tbody>';
+
+  table.innerHTML = thead + tbody;
+
+  // Bar chart
+  renderCostChart(monthly, modelKeys);
+
+  // Savings callout
+  renderSavings(monthly, modelKeys);
+}
+
+function renderCostChart(monthly, modelKeys) {
+  const container = document.getElementById('cost-chart-bars');
+  const maxVal = Math.max(...Object.values(monthly).filter(v => v > 0));
+  const minVal = Math.min(...Object.values(monthly));
+  const entries = modelKeys.map(m => ({ model: m, cost: monthly[m] }));
+  entries.sort((a, b) => b.cost - a.cost);
+
+  container.innerHTML = entries.map(e => {
+    const pct = maxVal > 0 ? (e.cost / maxVal * 100) : 0;
+    let barClass = 'normal';
+    if (e.cost === 0) barClass = 'free';
+    else if (e.cost === minVal && minVal > 0) barClass = 'cheapest';
+    else if (e.cost === maxVal) barClass = 'expensive';
+
+    return `
+      <div class="chart-bar-row">
+        <span class="chart-label">${e.model}</span>
+        <div class="chart-bar-container">
+          <div class="chart-bar ${barClass}" style="width: ${Math.max(pct, e.cost > 0 ? 3 : 0)}%;">
+            <span class="chart-bar-value">${formatCost(e.cost)}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderSavings(monthly, modelKeys) {
+  const container = document.getElementById('cost-savings');
+  const paidModels = modelKeys.filter(m => monthly[m] > 0);
+  if (paidModels.length < 2) {
+    container.style.display = 'none';
+    return;
+  }
+
+  const costs = paidModels.map(m => ({ model: m, cost: monthly[m] }));
+  costs.sort((a, b) => a.cost - b.cost);
+  const cheapest = costs[0];
+  const expensive = costs[costs.length - 1];
+  const savings = expensive.cost - cheapest.cost;
+  const pct = ((savings / expensive.cost) * 100).toFixed(0);
+
+  container.style.display = 'block';
+  container.innerHTML = `
+    <h3>Potential Monthly Savings</h3>
+    <p>Switch from <strong>${expensive.model}</strong> to <strong>${cheapest.model}</strong></p>
+    <div class="savings-amount">${formatCost(savings)}/mo</div>
+    <p style="margin-top: 4px; font-size: 13px; color: var(--text-muted);">That's ${pct}% less per month (${formatCost(expensive.cost)} vs ${formatCost(cheapest.cost)})</p>
+  `;
+}
+
+/* ═══════════════════════════════════════════════════
+   Tab 4: Composition Visualizer
+   ═══════════════════════════════════════════════════ */
+function initVisualizer() {
+  // Agent list
+  const container = document.getElementById('viz-agent-list');
+  let html = '';
+  categories.forEach(cat => {
+    const catAgents = agents.filter(a => a.category === cat);
+    html += `<div style="margin-bottom: 4px; margin-top: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">${cat}</div>`;
+    catAgents.forEach(a => {
+      html += `
+        <label class="cost-agent-check">
+          <input type="checkbox" value="${a.full_name}" onchange="toggleVizAgent('${a.full_name}', this.checked)">
+          <span class="check-name">${a.name}</span>
+        </label>`;
+    });
+  });
+  container.innerHTML = html;
+
+  // Pattern grid
+  const patGrid = document.getElementById('viz-pattern-grid');
+  patGrid.innerHTML = PATTERNS.map(p => `
+    <div class="pattern-opt" data-pattern="${p.id}" onclick="selectPattern('${p.id}')">${p.label}</div>
+  `).join('');
+}
+
+function toggleVizAgent(fullName, checked) {
+  if (checked) state.selectedVizAgents.add(fullName);
+  else state.selectedVizAgents.delete(fullName);
+  renderVisualization();
+}
+
+function selectPattern(patternId) {
+  state.selectedPattern = patternId;
+  document.querySelectorAll('.pattern-opt').forEach(p =>
+    p.classList.toggle('active', p.dataset.pattern === patternId)
+  );
+  renderVisualization();
+}
+
+function generateMermaid(agentNames, pattern) {
+  const names = agentNames.map(n => {
+    const a = findAgent(n);
+    return a ? a.name : shortName(n);
+  });
+
+  // Sanitize names for Mermaid IDs
+  const ids = names.map((n, i) => 'A' + i);
+  const labels = names.map(n => n.replace(/-/g, ' '));
+
+  if (names.length < 2) return '';
+
+  switch (pattern) {
+    case 'supervisor-worker': {
+      let lines = ['graph TD'];
+      lines.push(`  SUP["${labels[0]}\\n(Supervisor)"]:::supervisor`);
+      for (let i = 1; i < names.length; i++) {
+        lines.push(`  ${ids[i]}["${labels[i]}\\n(Worker)"]:::worker`);
+        lines.push(`  SUP -->|"delegate"| ${ids[i]}`);
+        lines.push(`  ${ids[i]} -->|"report"| SUP`);
+      }
+      lines.push('  classDef supervisor fill:#6366f1,stroke:#a78bfa,color:#fff');
+      lines.push('  classDef worker fill:#1a1a3e,stroke:#6366f1,color:#e2e8f0');
+      return lines.join('\n');
+    }
+
+    case 'sequential': {
+      let lines = ['graph LR'];
+      for (let i = 0; i < names.length; i++) {
+        lines.push(`  ${ids[i]}["${labels[i]}"]:::step`);
+      }
+      for (let i = 0; i < names.length - 1; i++) {
+        lines.push(`  ${ids[i]} -->|"step ${i + 1}"| ${ids[i + 1]}`);
+      }
+      lines.push('  classDef step fill:#1a1a3e,stroke:#6366f1,color:#e2e8f0');
+      return lines.join('\n');
+    }
+
+    case 'parallel': {
+      let lines = ['graph TD'];
+      lines.push(`  IN(("Input")):::io`);
+      lines.push(`  OUT(("Output")):::io`);
+      for (let i = 0; i < names.length; i++) {
+        lines.push(`  ${ids[i]}["${labels[i]}"]:::worker`);
+        lines.push(`  IN --> ${ids[i]}`);
+        lines.push(`  ${ids[i]} --> OUT`);
+      }
+      lines.push('  classDef io fill:#6366f1,stroke:#a78bfa,color:#fff');
+      lines.push('  classDef worker fill:#1a1a3e,stroke:#6366f1,color:#e2e8f0');
+      return lines.join('\n');
+    }
+
+    case 'reflection': {
+      let lines = ['graph TD'];
+      lines.push(`  ${ids[0]}["${labels[0]}\\n(Generator)"]:::gen`);
+      if (names.length > 1) {
+        lines.push(`  ${ids[1]}["${labels[1]}\\n(Critic)"]:::critic`);
+        lines.push(`  ${ids[0]} -->|"generate"| ${ids[1]}`);
+        lines.push(`  ${ids[1]} -->|"feedback"| ${ids[0]}`);
+        for (let i = 2; i < names.length; i++) {
+          lines.push(`  ${ids[i]}["${labels[i]}\\n(Validator)"]:::validator`);
+          lines.push(`  ${ids[1]} -->|"validate"| ${ids[i]}`);
+        }
+      }
+      lines.push('  classDef gen fill:#6366f1,stroke:#a78bfa,color:#fff');
+      lines.push('  classDef critic fill:#f59e0b,stroke:#fbbf24,color:#000');
+      lines.push('  classDef validator fill:#1a1a3e,stroke:#6366f1,color:#e2e8f0');
+      return lines.join('\n');
+    }
+
+    case 'handoff': {
+      let lines = ['graph LR'];
+      for (let i = 0; i < names.length; i++) {
+        lines.push(`  ${ids[i]}["${labels[i]}"]:::agent`);
+      }
+      for (let i = 0; i < names.length - 1; i++) {
+        lines.push(`  ${ids[i]} -.->|"handoff"| ${ids[i + 1]}`);
+      }
+      // Also allow handoff back
+      if (names.length > 2) {
+        lines.push(`  ${ids[names.length - 1]} -.->|"handoff"| ${ids[0]}`);
+      }
+      lines.push('  classDef agent fill:#1a1a3e,stroke:#a78bfa,color:#e2e8f0');
+      return lines.join('\n');
+    }
+
+    case 'group-chat': {
+      let lines = ['graph TD'];
+      lines.push(`  CHAT{{"Group Chat\\nManager"}}:::manager`);
+      for (let i = 0; i < names.length; i++) {
+        lines.push(`  ${ids[i]}["${labels[i]}"]:::member`);
+        lines.push(`  CHAT <-->|"speak"| ${ids[i]}`);
+      }
+      lines.push('  classDef manager fill:#6366f1,stroke:#a78bfa,color:#fff');
+      lines.push('  classDef member fill:#1a1a3e,stroke:#6366f1,color:#e2e8f0');
+      return lines.join('\n');
+    }
+
+    case 'dag': {
+      let lines = ['graph TD'];
+      // Create a DAG with some branching
+      for (let i = 0; i < names.length; i++) {
+        lines.push(`  ${ids[i]}["${labels[i]}"]:::node`);
+      }
+      // First node connects to second and third
+      if (names.length >= 3) {
+        lines.push(`  ${ids[0]} --> ${ids[1]}`);
+        lines.push(`  ${ids[0]} --> ${ids[2]}`);
+        // Remaining nodes connect from both branches
+        for (let i = 3; i < names.length; i++) {
+          lines.push(`  ${ids[i - 2]} --> ${ids[i]}`);
+          if (i < names.length - 1) lines.push(`  ${ids[i - 1]} --> ${ids[i]}`);
+        }
+        // Last node connects from final branches
+        lines.push(`  ${ids[1]} --> ${ids[names.length - 1]}`);
+      } else if (names.length === 2) {
+        lines.push(`  ${ids[0]} --> ${ids[1]}`);
+      }
+      lines.push('  classDef node fill:#1a1a3e,stroke:#6366f1,color:#e2e8f0');
+      return lines.join('\n');
+    }
+
+    case 'split-and-merge': {
+      let lines = ['graph TD'];
+      lines.push(`  SPLIT{{"Splitter"}}:::split`);
+      lines.push(`  MERGE{{"Merger"}}:::merge`);
+      for (let i = 0; i < names.length; i++) {
+        lines.push(`  ${ids[i]}["${labels[i]}"]:::worker`);
+        lines.push(`  SPLIT -->|"chunk ${i + 1}"| ${ids[i]}`);
+        lines.push(`  ${ids[i]} -->|"result"| MERGE`);
+      }
+      lines.push('  classDef split fill:#6366f1,stroke:#a78bfa,color:#fff');
+      lines.push('  classDef merge fill:#10b981,stroke:#34d399,color:#fff');
+      lines.push('  classDef worker fill:#1a1a3e,stroke:#6366f1,color:#e2e8f0');
+      return lines.join('\n');
+    }
+
+    default:
+      return '';
+  }
+}
+
+function renderVisualization() {
+  const vizBody = document.getElementById('viz-diagram-body');
+  const mermaidSection = document.getElementById('viz-mermaid-section');
+  const mermaidPre = document.getElementById('viz-mermaid-pre');
+  const copyBtn = document.getElementById('viz-copy-mermaid');
+  const costSection = document.getElementById('viz-team-cost');
+  const titleEl = document.getElementById('viz-diagram-title');
+
+  const selectedNames = [...state.selectedVizAgents];
+
+  if (selectedNames.length < 2 || !state.selectedPattern) {
+    vizBody.innerHTML = '<div class="viz-placeholder"><p>Select agents and a pattern to generate a diagram</p><p style="font-size: 13px;">Choose at least 2 agents from the sidebar</p></div>';
+    mermaidSection.style.display = 'none';
+    copyBtn.style.display = 'none';
+    costSection.style.display = 'none';
+    return;
+  }
+
+  const mermaidCode = generateMermaid(selectedNames, state.selectedPattern);
+  state.currentMermaid = mermaidCode;
+
+  const patternLabel = PATTERNS.find(p => p.id === state.selectedPattern)?.label || state.selectedPattern;
+  titleEl.textContent = `${patternLabel} Pattern`;
+
+  // Render mermaid diagram
+  vizBody.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
+  copyBtn.style.display = 'inline-block';
+
+  // Run mermaid
+  try {
+    mermaid.run({ nodes: vizBody.querySelectorAll('.mermaid') });
+  } catch (err) {
+    console.error('Mermaid render error:', err);
+  }
+
+  // Show mermaid source
+  mermaidSection.style.display = 'block';
+  mermaidPre.textContent = mermaidCode;
+
+  // Show team cost
+  renderVizCost(selectedNames);
+}
+
+function renderVizCost(selectedNames) {
+  const costSection = document.getElementById('viz-team-cost');
+  const costGrid = document.getElementById('viz-cost-grid');
+
+  const selectedAgents = selectedNames.map(findAgent).filter(Boolean);
+  if (selectedAgents.length === 0) {
+    costSection.style.display = 'none';
+    return;
+  }
+
+  costSection.style.display = 'block';
+
+  const modelKeys = Object.keys(pricing);
+  const teamCosts = {};
+  modelKeys.forEach(m => {
+    teamCosts[m] = selectedAgents.reduce((sum, a) => sum + (calcCost(a, m) || 0), 0);
+  });
+
+  costGrid.innerHTML = modelKeys.map(m => `
+    <div class="viz-cost-item">
+      <div class="viz-cost-model">${m}</div>
+      <div class="viz-cost-value ${teamCosts[m] === 0 ? 'free' : ''}">${formatCost(teamCosts[m])}</div>
+    </div>
+  `).join('');
+}
+
+function copyMermaidCode() {
+  const btn = document.querySelector('#viz-copy-mermaid');
+  copyText(state.currentMermaid, btn);
+}
+
+/* ═══════════════════════════════════════════════════
+   Initialize
+   ═══════════════════════════════════════════════════ */
+// Update header stats
+document.getElementById('stat-agents').textContent = agents.length;
+document.getElementById('stat-categories').textContent = categories.length;
+document.getElementById('stat-models').textContent = Object.keys(pricing).length;
+
+// Initialize mermaid
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#6366f1',
+    primaryTextColor: '#e2e8f0',
+    primaryBorderColor: '#a78bfa',
+    lineColor: '#6366f1',
+    secondaryColor: '#1a1a3e',
+    tertiaryColor: '#252552',
+    background: '#1a1a3e',
+    mainBkg: '#1a1a3e',
+    textColor: '#e2e8f0',
+    fontSize: '14px'
+  }
+});
+
+// Render all tabs
+renderCategoryPills();
+renderAgentGrid();
+initPlayground();
+initCostCalculator();
+initVisualizer();
+</script>
+</body>
+</html>

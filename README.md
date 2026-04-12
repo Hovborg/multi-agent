@@ -19,8 +19,9 @@
 <p align="center">
   <a href="#quick-start">Quick Start</a> &bull;
   <a href="#agent-catalog">Agent Catalog</a> &bull;
+  <a href="#smart-enhancements">Smart Enhancements</a> &bull;
   <a href="#patterns">Patterns</a> &bull;
-  <a href="#frameworks">Frameworks</a> &bull;
+  <a href="web/">Playground</a> &bull;
   <a href="docs/">Docs</a> &bull;
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
@@ -280,6 +281,70 @@ Built for the 2026 protocol stack:
 | **[MCP](docs/protocols/mcp.md)** (Model Context Protocol) | Agent ↔ Tool | Native |
 | **[A2A](docs/protocols/a2a.md)** (Agent-to-Agent) | Agent ↔ Agent | Native |
 | **[AG-UI](docs/protocols/ag-ui.md)** (Agent-to-UI) | Agent ↔ Frontend | Planned |
+
+## Smart Enhancements
+
+Make any agent smarter with research-backed prompt engineering techniques:
+
+```bash
+# Enhance with category-tuned profile
+multiagent enhance code/code-reviewer
+
+# Apply all 8 techniques
+multiagent enhance code/code-reviewer -p all
+
+# Enhance + export to Claude Code
+multiagent enhance code/code-reviewer -p all -t claude-code -o .agents/skills
+```
+
+| Enhancement | Effect | Source |
+|------------|--------|--------|
+| `reasoning` | +20% task completion | OpenAI SWE-bench |
+| `error_recovery` | 5-level retry hierarchy | Anthropic engineering |
+| `verification` | Self-check before output | Claude Code internal |
+| `confidence` | -40-60% hallucination | Academic research |
+| `tool_discipline` | Faster, fewer errors | OpenAI GPT-5.4 guide |
+| `failure_modes` | Avoids 6 anti-patterns | 120+ leaked prompts study |
+| `context_management` | Better long-running tasks | LangChain context engineering |
+| `information_priority` | Facts over guessing | Manus AI / Anthropic |
+
+```python
+from multiagent import Catalog, enhance_agent
+
+catalog = Catalog()
+agent = catalog.load("code/code-reviewer")
+smart_agent = enhance_agent(agent, profile="all")  # All 8 techniques applied
+```
+
+## Agent Composition Visualizer
+
+Auto-generate Mermaid diagrams for agent teams:
+
+```bash
+multiagent visualize code/code-reviewer code/test-writer code/security-auditor
+```
+
+```mermaid
+graph TD
+    code_reviewer["Code Reviewer<br/><small>supervisor</small>"]
+    test_writer["Test Writer<br/><small>worker</small>"]
+    code_reviewer --> test_writer
+    security_auditor["Security Auditor<br/><small>worker</small>"]
+    code_reviewer --> security_auditor
+```
+
+Try different patterns: `--pattern sequential`, `parallel`, `reflection`, `handoff`, `group-chat`
+
+## Interactive Playground
+
+Browse agents, test enhancements, compare costs, and build teams visually — all in the browser:
+
+**[Open Playground](web/index.html)** (no backend needed — pure static HTML)
+
+- **Agent Catalog** — Search and filter all 48 agents
+- **Playground** — Test enhance profiles and export formats live
+- **Cost Calculator** — Compare costs across 13 models with monthly estimates
+- **Composition Visualizer** — Build teams and auto-generate Mermaid diagrams
 
 ## Cost Estimation
 

@@ -278,5 +278,43 @@ def enhancements() -> None:
     console.print(table)
 
 
+@main.command()
+@click.argument("agent_names", nargs=-1, required=True)
+@click.option(
+    "--pattern",
+    "-p",
+    default="supervisor-worker",
+    help="Orchestration pattern",
+)
+def visualize(agent_names: tuple[str, ...], pattern: str) -> None:
+    """Generate a Mermaid diagram for an agent team.
+
+    Examples:
+        multiagent visualize code/code-reviewer code/test-writer
+        multiagent visualize code/code-reviewer code/test-writer -p sequential
+    """
+    from multiagent.visualize import visualize_team
+
+    catalog = Catalog()
+    agents = []
+    for name in agent_names:
+        try:
+            agents.append(catalog.load(name))
+        except KeyError as e:
+            console.print(f"[red]{e}[/red]")
+            return
+
+    diagram = visualize_team(agents, pattern)
+    console.print(f"\n[bold]Pattern:[/bold] {pattern}")
+    console.print(f"[bold]Agents:[/bold] {', '.join(a.full_name for a in agents)}\n")
+    console.print("[dim]```mermaid[/dim]")
+    console.print(diagram)
+    console.print("[dim]```[/dim]")
+
+    estimate = CostEstimator.estimate_team(agents, model="claude-haiku-4-5")
+    e = estimate.estimates[0]
+    console.print(f"\n[bold]Cost:[/bold] ${e.cost_usd:.4f}/run (claude-haiku-4-5)")
+
+
 if __name__ == "__main__":
     main()
