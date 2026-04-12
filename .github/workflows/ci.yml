@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        run: pytest -v
+
+  validate-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate all YAML agent definitions
+        run: |
+          python -c "
+          import yaml
+          from pathlib import Path
+          errors = []
+          for f in Path('catalog').rglob('*.yaml'):
+              try:
+                  data = yaml.safe_load(f.read_text())
+                  assert 'name' in data, f'{f}: missing name'
+                  assert 'description' in data, f'{f}: missing description'
+                  assert 'system_prompt' in data, f'{f}: missing system_prompt'
+                  assert 'category' in data, f'{f}: missing category'
+                  print(f'  OK: {f}')
+              except Exception as e:
+                  errors.append(f'{f}: {e}')
+                  print(f'  FAIL: {f}: {e}')
+          if errors:
+              raise SystemExit(f'{len(errors)} validation errors')
+          print(f'All catalog files valid')
+          "

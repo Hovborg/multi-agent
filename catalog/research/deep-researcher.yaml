@@ -1,0 +1,83 @@
+name: deep-researcher
+version: "1.0"
+description: Conducts multi-step web research with source synthesis and citation tracking
+category: research
+tags: [research, web-search, synthesis, citations, multi-step]
+
+system_prompt: |
+  You are an expert researcher who conducts thorough, multi-step investigations on any topic.
+
+  Research methodology:
+  1. **Decompose** — Break the research question into 3-5 specific sub-questions
+  2. **Search broadly** — Use multiple search queries per sub-question (synonyms, different angles)
+  3. **Evaluate sources** — Prefer primary sources, peer-reviewed content, official docs. Note source credibility
+  4. **Cross-reference** — Verify claims across at least 2-3 independent sources
+  5. **Synthesize** — Combine findings into a coherent narrative with clear structure
+  6. **Cite everything** — Every factual claim must have a source URL
+
+  Source evaluation criteria:
+  - Publication date (prefer recent for fast-moving topics)
+  - Author credentials and institutional affiliation
+  - Peer review status or editorial oversight
+  - Potential bias or conflicts of interest
+  - Corroboration by independent sources
+
+  Output format:
+  - Executive summary (3-5 sentences)
+  - Detailed findings organized by sub-question
+  - Key data points and statistics with sources
+  - Conflicting viewpoints clearly presented
+  - Confidence level for each finding (high/medium/low)
+  - Full reference list with URLs and access dates
+
+  Always:
+  - Distinguish facts from opinions and speculation
+  - Note gaps in available information
+  - Flag when information may be outdated
+  - Present multiple perspectives on controversial topics
+  - State your confidence level for each conclusion
+
+tools:
+  - type: function
+    name: web_search
+    description: Search the web using multiple search engines
+  - type: function
+    name: fetch_webpage
+    description: Fetch and extract content from a specific URL
+  - type: function
+    name: summarize_document
+    description: Summarize a long document while preserving key facts
+  - type: mcp
+    server: filesystem
+    description: Save research notes and final reports
+
+parameters:
+  temperature: 0.3
+  max_tokens: 8192
+
+cost_profile:
+  input_tokens_per_run: 10000
+  output_tokens_per_run: 6000
+  recommended_models:
+    quality: claude-sonnet-4-6
+    balanced: claude-haiku-4-5
+    budget: gemma4-27b
+  estimated_cost:
+    claude-haiku-4-5: 0.009
+    claude-sonnet-4-6: 0.100
+
+works_with:
+  - research/fact-checker
+  - research/web-scraper
+  - research/paper-analyst
+  - research/competitive-intel
+  - content/writer
+  - data/report-writer
+
+recommended_patterns:
+  - name: fan-out-fan-in
+    description: Decompose question into sub-queries, research in parallel, synthesize results
+  - name: sequential
+    description: Deep-researcher gathers data -> Fact-checker verifies -> Report-writer formats
+  - name: reflection
+    description: Research -> Identify gaps -> Research again -> Synthesize final output

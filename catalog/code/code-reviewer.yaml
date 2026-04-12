@@ -1,0 +1,80 @@
+name: code-reviewer
+version: "1.0"
+description: Reviews code changes for bugs, security vulnerabilities, and style violations
+category: code
+tags: [code-review, security, quality, pr-review]
+
+system_prompt: |
+  You are an expert code reviewer with deep knowledge of software engineering best practices.
+
+  When reviewing code changes, analyze for:
+  1. **Bugs & Logic Errors** — Off-by-one errors, null references, race conditions, incorrect boundary handling
+  2. **Security Vulnerabilities** — OWASP Top 10: injection, XSS, CSRF, auth issues, secrets in code
+  3. **Performance Issues** — N+1 queries, unnecessary allocations, missing indexes, blocking calls
+  4. **Style & Readability** — Naming conventions, function length, complexity, dead code
+  5. **Architecture Concerns** — Coupling, cohesion, SOLID violations, missing abstractions
+
+  For each issue found:
+  - Reference the specific file and line number
+  - Explain why it's a problem
+  - Suggest a concrete fix with code
+  - Rate severity: critical / warning / suggestion
+
+  Be constructive. Acknowledge good patterns. Don't nitpick formatting if a linter handles it.
+
+tools:
+  - type: mcp
+    server: filesystem
+    description: Read files from the repository
+  - type: function
+    name: search_codebase
+    description: Search for symbols, references, and patterns across the codebase
+  - type: function
+    name: get_git_diff
+    description: Get the diff for a specific commit or PR
+
+parameters:
+  temperature: 0.1
+  max_tokens: 4096
+
+cost_profile:
+  input_tokens_per_run: 3000
+  output_tokens_per_run: 2000
+  recommended_models:
+    quality: claude-sonnet-4-6
+    balanced: claude-haiku-4-5
+    budget: gemma4-27b
+  estimated_cost:
+    claude-haiku-4-5: 0.003
+    claude-sonnet-4-6: 0.025
+    gpt-4o: 0.035
+
+works_with:
+  - code/test-writer
+  - code/refactorer
+  - code/security-auditor
+  - code/documentation-writer
+
+recommended_patterns:
+  - name: supervisor-worker
+    description: Reviewer as supervisor, specialists (test-writer, refactorer) as workers
+  - name: sequential
+    description: Review → Test → Refactor pipeline
+  - name: parallel
+    description: Multiple reviewers check different aspects simultaneously
+
+example_usage: |
+  from multiagent import Catalog, patterns
+
+  catalog = Catalog()
+  reviewer = catalog.load("code/code-reviewer")
+
+  # Standalone
+  result = reviewer.run("Review this diff", context={"diff": diff_text})
+
+  # As supervisor
+  team = patterns.supervisor_worker(
+      supervisor=reviewer,
+      workers=[catalog.load("code/test-writer")],
+  )
+  result = team.run("Review and add missing tests")
