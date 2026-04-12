@@ -1,4 +1,13 @@
 <p align="center">
+  <a href="docs/i18n/README.zh-CN.md">简体中文</a> •
+  <a href="docs/i18n/README.ja.md">日本語</a> •
+  <a href="docs/i18n/README.ko.md">한국어</a> •
+  <a href="docs/i18n/README.es.md">Español</a> •
+  <a href="docs/i18n/README.de.md">Deutsch</a> •
+  <a href="docs/i18n/README.da.md">Dansk</a>
+</p>
+
+<p align="center">
   <img src="docs/assets/banner.svg" alt="multi-agent banner" width="700">
 </p>
 
