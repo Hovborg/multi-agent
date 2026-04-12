@@ -4,10 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from multiagent.catalog import AgentDefinition, Catalog
-from multiagent.cost import CostEstimator, MODEL_PRICING
+from multiagent.catalog import Catalog
+from multiagent.cost import MODEL_PRICING, CostEstimator
 from multiagent.router import AgentRouter
-
 
 CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
 

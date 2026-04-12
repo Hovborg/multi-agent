@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.png" alt="multi-agent banner" width="600">
+  <img src="docs/assets/banner.svg" alt="multi-agent banner" width="700">
 </p>
 
 <h1 align="center">multi-agent</h1>
