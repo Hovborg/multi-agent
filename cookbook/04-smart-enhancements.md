@@ -42,22 +42,13 @@ Original prompt  +  Enhancement blocks  =  Enhanced prompt
 
 Each catalog category has a default enhancement profile tuned for its use case:
 
-```python
-from multiagent.enhance import CATEGORY_PROFILES
-
-for category, blocks in sorted(CATEGORY_PROFILES.items()):
-    print(f"{category:15} -> {', '.join(blocks)}")
-```
-
-Output:
-
-```
-code            -> reasoning, error_recovery, verification, tool_discipline, failure_modes
-research        -> reasoning, confidence, information_priority, verification, context_management
-data            -> reasoning, verification, confidence, tool_discipline
-finance         -> reasoning, confidence, verification, information_priority, failure_modes
-legal           -> reasoning, confidence, verification, information_priority, failure_modes
-```
+| Category | Default blocks |
+|----------|---------------|
+| `code` | reasoning, error_recovery, verification, tool_discipline, failure_modes |
+| `research` | reasoning, confidence, information_priority, verification, context_management |
+| `data` | reasoning, verification, confidence, tool_discipline |
+| `finance` | reasoning, confidence, verification, information_priority, failure_modes |
+| `legal` | reasoning, confidence, verification, information_priority, failure_modes |
 
 ## Applying enhancements
 
@@ -118,19 +109,6 @@ print(f"\nAdded {len(smart.system_prompt) - len(agent.system_prompt)} chars of e
 | Mission-critical or high-stakes tasks | `"all"` -- maximum reliability |
 | You know exactly what you need | Custom list via `enhancements=[...]` |
 | Cost-constrained, model is already strong | `"none"` -- skip enhancements |
-
-## Enhancement from the CLI
-
-```bash
-# Enhance and print the result
-multiagent enhance code/code-reviewer
-
-# Enhance with all blocks
-multiagent enhance code/code-reviewer -p all
-
-# Enhance and export to Claude Code in one step
-multiagent enhance code/code-reviewer -p all -t claude-code -o .agents/skills
-```
 
 ## Complete runnable script
 

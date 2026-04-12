@@ -44,44 +44,27 @@ From the CLI:
 multiagent export code/code-reviewer claude-code -o .agents/skills
 ```
 
-## Export to Codex / OpenClaw
+## Export to Codex, Gemini, and ChatGPT
 
-Generates an AGENTS.md section you append to your project:
+Each target uses the same `export_agent` call with a different target string:
 
 ```python
-content = export_agent(agent, target="codex", output_dir="./exports")
-print(content[:300])
+# Codex / OpenClaw -- appends to AGENTS.md
+export_agent(agent, target="codex", output_dir="./exports")
+
+# Google ADK / Gemini -- generates YAML config
+export_agent(agent, target="gemini", output_dir="./adk-agents")
+
+# ChatGPT Custom GPTs -- generates system instructions
+export_agent(agent, target="chatgpt", output_dir="./gpt-exports")
 ```
 
-From the CLI:
+CLI equivalents:
 
 ```bash
 multiagent export code/code-reviewer codex >> AGENTS.md
-```
-
-## Export to Google Gemini / ADK
-
-Generates a YAML config for Google ADK or Vertex AI Agent Builder:
-
-```python
-content = export_agent(agent, target="gemini", output_dir="./adk-agents")
-print(content[:300])
-```
-
-## Export to ChatGPT Custom GPTs
-
-Generates plain instructions you paste into the Custom GPT builder:
-
-```python
-content = export_agent(agent, target="chatgpt", output_dir="./gpt-exports")
-print(content[:300])
-```
-
-From the CLI:
-
-```bash
+multiagent export code/code-reviewer gemini -o ./adk-agents
 multiagent export code/code-reviewer chatgpt
-# Copy the output and paste into ChatGPT's "Instructions" field
 ```
 
 ## Bulk export for a whole category
@@ -100,7 +83,6 @@ from multiagent import Catalog, export_agent
 catalog = Catalog()
 for agent in catalog.by_category("code"):
     export_agent(agent, target="claude-code", output_dir=".agents/skills")
-    print(f"  Exported {agent.name}")
 ```
 
 ## Using raw export with Ollama

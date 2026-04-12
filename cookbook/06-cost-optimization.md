@@ -17,21 +17,17 @@ cost model, model routing strategies, and monthly budget planning.
 
 ## Understanding the cost model
 
-Every agent in the catalog includes a `cost_profile` with estimated token counts
-per run. The `CostEstimator` combines those with real model pricing:
+Every agent has a `cost_profile` with estimated token counts per run. The
+`CostEstimator` combines those with real pricing for 13 models. Local models
+like `gemma4-27b` show as free.
 
 ```python
 from multiagent import Catalog, CostEstimator
 
 catalog = Catalog()
 agent = catalog.load("code/code-reviewer")
-
-estimate = CostEstimator.estimate_agent(agent, extra_input_tokens=5000)
-print(estimate)
+print(CostEstimator.estimate_agent(agent, extra_input_tokens=5000))
 ```
-
-The estimator knows pricing for 13 models across Anthropic, OpenAI, Google, and
-open-source providers. Local models like `gemma4-27b` show as free.
 
 ## Model routing strategy
 
@@ -128,7 +124,7 @@ for model in ["claude-haiku-4-5", "claude-sonnet-4-6", "gpt-4o-mini"]:
    input, cache it. Re-running costs money.
 
 5. **Right-size token budgets.** Lower `max_tokens` on agents that produce short
-   outputs. The cost estimator uses the catalog defaults, but you can override.
+   outputs.
 
 ## Complete runnable script
 
@@ -138,30 +134,15 @@ for model in ["claude-haiku-4-5", "claude-sonnet-4-6", "gpt-4o-mini"]:
 from multiagent import Catalog, CostEstimator
 
 catalog = Catalog()
-team = catalog.load_team([
-    "code/code-reviewer", "code/test-writer", "code/security-auditor"
-])
+team = catalog.load_team(["code/code-reviewer", "code/test-writer", "code/security-auditor"])
 
-runs_per_day = 20
-days = 22
-
-print("Monthly cost comparison (20 reviews/day):\n")
-print(f"{'Strategy':<30} {'Per Run':>10} {'Monthly':>10}")
-print("-" * 52)
-
-for label, model in [
-    ("All Sonnet (baseline)", "claude-sonnet-4-6"),
-    ("All Haiku", "claude-haiku-4-5"),
-    ("All GPT-4o-mini", "gpt-4o-mini"),
-    ("All Gemini Flash", "gemini-2.5-flash"),
-    ("All local (Gemma4)", "gemma4-27b"),
-]:
+for label, model in [("Sonnet", "claude-sonnet-4-6"), ("Haiku", "claude-haiku-4-5"),
+                     ("GPT-4o-mini", "gpt-4o-mini"), ("Gemini Flash", "gemini-2.5-flash"),
+                     ("Local Gemma4", "gemma4-27b")]:
     est = CostEstimator.estimate_team(team, model=model, extra_input_tokens=5000)
     per_run = est.estimates[0].cost_usd
-    monthly = per_run * runs_per_day * days
-    cost_str = f"${per_run:.4f}" if per_run > 0 else "free"
-    month_str = f"${monthly:.2f}" if monthly > 0 else "free"
-    print(f"{label:<30} {cost_str:>10} {month_str:>10}")
+    monthly = per_run * 20 * 22
+    print(f"{label:<15} ${per_run:.4f}/run  ${monthly:.2f}/month")
 ```
 
 ## Next steps

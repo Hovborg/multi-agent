@@ -316,5 +316,178 @@ def visualize(agent_names: tuple[str, ...], pattern: str) -> None:
     console.print(f"\n[bold]Cost:[/bold] ${e.cost_usd:.4f}/run (claude-haiku-4-5)")
 
 
+@main.command(name="eval")
+@click.argument("agent_name", required=False)
+@click.option("--all-agents", "-a", is_flag=True, help="Evaluate entire catalog")
+def eval_cmd(agent_name: str | None, all_agents: bool) -> None:
+    """Evaluate agent quality with scores and improvement suggestions.
+
+    Examples:
+        multiagent eval code/code-reviewer
+        multiagent eval --all-agents
+    """
+    from multiagent.eval import benchmark_report, evaluate_agent
+
+    catalog = Catalog()
+
+    if all_agents or not agent_name:
+        report = benchmark_report(catalog)
+        console.print(f"\n{report}")
+    else:
+        try:
+            agent = catalog.load(agent_name)
+        except KeyError as e:
+            console.print(f"[red]{e}[/red]")
+            return
+        score = evaluate_agent(agent)
+        console.print(f"\n{score}")
+
+
+@main.command()
+@click.option("--task", "-t", help="Task description (skips first prompt)")
+def build(task: str | None) -> None:
+    """Interactive team builder wizard.
+
+    Guides you through composing a multi-agent team step by step.
+
+    Example:
+        multiagent build
+        multiagent build -t "review PRs and write tests"
+    """
+    from multiagent.builder import (
+        ENHANCEMENT_PROFILES,
+        EXPORT_TARGETS,
+        PATTERNS,
+        TeamConfig,
+        get_popular_models,
+    )
+
+    catalog = Catalog()
+    router = AgentRouter(catalog)
+    config = TeamConfig()
+
+    console.print("\n[bold cyan]Multi-Agent Team Builder[/bold cyan]")
+    console.print("[dim]Build your perfect agent team step by step\n[/dim]")
+
+    # Step 1: Task description
+    console.print("[bold]Step 1/6:[/bold] What's your task?")
+    if task:
+        config.task_description = task
+        console.print(f"  → {task}\n")
+    else:
+        config.task_description = click.prompt("  Describe your task", type=str)
+        console.print()
+
+    # Get recommendations
+    rec = router.recommend(config.task_description)
+    if rec.agents:
+        console.print(f"[green]Found {len(rec.agents)} recommended agents:[/green]")
+        for i, a in enumerate(rec.agents, 1):
+            console.print(f"  {i}. {a.full_name} — {a.description}")
+        console.print()
+        use_rec = click.confirm("  Use these agents?", default=True)
+        if use_rec:
+            config.agents = list(rec.agents)
+        console.print()
+
+    # Step 2: Select/add agents
+    if not config.agents:
+        console.print("[bold]Step 2/6:[/bold] Select agents")
+        console.print("  Available categories:", ", ".join(catalog.list_categories()))
+        while True:
+            name = click.prompt(
+                "  Agent name (or 'done')", type=str, default="done"
+            )
+            if name == "done":
+                break
+            try:
+                agent = catalog.load(name)
+                config.agents.append(agent)
+                console.print(f"  [green]+ {agent.full_name}[/green]")
+            except KeyError:
+                results = catalog.search(name)
+                if results:
+                    console.print(f"  Did you mean: {', '.join(a.full_name for a in results[:5])}")
+                else:
+                    console.print(f"  [red]Not found: {name}[/red]")
+        console.print()
+    else:
+        console.print("[bold]Step 2/6:[/bold] Agents selected from recommendations")
+        console.print()
+
+    if not config.agents:
+        console.print("[red]No agents selected. Exiting.[/red]")
+        return
+
+    # Step 3: Pattern
+    console.print("[bold]Step 3/6:[/bold] Choose orchestration pattern")
+    for i, (name, desc) in enumerate(PATTERNS, 1):
+        marker = " [cyan](recommended)[/cyan]" if name == rec.pattern else ""
+        console.print(f"  {i}. {name} — {desc}{marker}")
+    pattern_idx = click.prompt(
+        "  Select pattern",
+        type=click.IntRange(1, len(PATTERNS)),
+        default=next(
+            (i for i, (n, _) in enumerate(PATTERNS, 1) if n == rec.pattern), 1
+        ),
+    )
+    config.pattern = PATTERNS[pattern_idx - 1][0]
+    console.print()
+
+    # Step 4: Enhancement
+    console.print("[bold]Step 4/6:[/bold] Choose enhancement profile")
+    for i, (name, desc) in enumerate(ENHANCEMENT_PROFILES, 1):
+        console.print(f"  {i}. {name} — {desc}")
+    enh_idx = click.prompt("  Select profile", type=click.IntRange(1, 4), default=3)
+    config.enhancement_profile = ENHANCEMENT_PROFILES[enh_idx - 1][0]
+    console.print()
+
+    # Step 5: Model
+    console.print("[bold]Step 5/6:[/bold] Choose model")
+    models = get_popular_models()
+    for i, (name, label) in enumerate(models, 1):
+        console.print(f"  {i}. {label}")
+    model_idx = click.prompt(
+        "  Select model",
+        type=click.IntRange(1, len(models)),
+        default=next((i for i, (n, _) in enumerate(models, 1) if n == "claude-haiku-4-5"), 1),
+    )
+    config.model = models[model_idx - 1][0]
+    console.print()
+
+    # Step 6: Export
+    console.print("[bold]Step 6/6:[/bold] Choose export format")
+    for i, (name, desc) in enumerate(EXPORT_TARGETS, 1):
+        console.print(f"  {i}. {name} — {desc}")
+    exp_idx = click.prompt("  Select format", type=click.IntRange(1, 5), default=5)
+    config.export_target = EXPORT_TARGETS[exp_idx - 1][0]
+    console.print()
+
+    # Summary
+    console.print("[bold cyan]" + "=" * 50 + "[/bold cyan]")
+    console.print(config.summary())
+
+    # Diagram
+    if len(config.agents) >= 2:
+        console.print("\n[bold]Team Diagram:[/bold]")
+        console.print("[dim]```mermaid[/dim]")
+        console.print(config.get_diagram())
+        console.print("[dim]```[/dim]")
+
+    # Export
+    console.print()
+    do_export = click.confirm("Export enhanced agents to files?", default=False)
+    if do_export:
+        from pathlib import Path
+
+        output = click.prompt("  Output directory", default="./agents-output")
+        paths = config.export_all(Path(output))
+        console.print(f"\n[green]Exported {len(paths)} agents to {output}/[/green]")
+        for p in paths:
+            console.print(f"  → {p}")
+
+    console.print("\n[bold green]Team builder complete![/bold green]")
+
+
 if __name__ == "__main__":
     main()
