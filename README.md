@@ -27,7 +27,7 @@
 
 ---
 
-**50+ battle-tested agent definitions. 8 orchestration patterns. 6 framework adapters. Zero lock-in.**
+**50+ battle-tested agent definitions. 11 categories. 8 orchestration patterns. 6 framework adapters. 5 export targets. Zero lock-in.**
 
 `multi-agent` is a framework-agnostic catalog of production-ready AI agent patterns. Define your agents once in YAML, run them on CrewAI, LangGraph, OpenAI Agents SDK, Claude SDK, Google ADK, or smolagents.
 
@@ -41,7 +41,7 @@ Stop reinventing agents. Start composing them.
 |---|:---:|:---:|:---:|:---:|:---:|
 | Framework-agnostic definitions | **Yes** | No | No | No | No |
 | Export to any AI platform | **Yes** | No | No | No | No |
-| Agent catalog with 27+ roles | **Yes** | ~10 | ~5 | ~3 | ~5 |
+| Agent catalog with 50+ roles | **Yes** | ~10 | ~5 | ~3 | ~5 |
 | Pattern library (8 patterns) | **Yes** | 2 | 3 | 2 | 2 |
 | Built-in cost estimation | **Yes** | No | No | No | No |
 | Agent recommendation engine | **Yes** | No | No | No | No |
@@ -193,11 +193,16 @@ recommended_patterns:
 | Category | Agents | Description |
 |----------|--------|-------------|
 | **[code/](catalog/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | Software development lifecycle |
-| **[research/](catalog/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` `trend-tracker` | Research and analysis |
-| **[data/](catalog/data/)** | `data-analyst` `sql-generator` `report-writer` `chart-builder` `data-cleaner` `etl-agent` | Data engineering and analysis |
-| **[devops/](catalog/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` `cost-optimizer` `security-scanner` | Infrastructure and operations |
-| **[content/](catalog/content/)** | `writer` `editor` `translator` `seo-optimizer` `social-media-agent` `newsletter-writer` | Content creation pipeline |
-| **[orchestration/](catalog/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` `memory-manager` `error-handler` | Meta-agents for coordination |
+| **[research/](catalog/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | Research and analysis |
+| **[data/](catalog/data/)** | `data-analyst` `sql-generator` `report-writer` | Data engineering and analysis |
+| **[devops/](catalog/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | Infrastructure and operations |
+| **[content/](catalog/content/)** | `writer` `editor` `translator` `seo-optimizer` | Content creation pipeline |
+| **[finance/](catalog/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | Financial analysis and compliance |
+| **[support/](catalog/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | Customer service pipeline |
+| **[legal/](catalog/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | Legal and compliance |
+| **[personal/](catalog/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | Personal productivity |
+| **[security/](catalog/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | Security operations |
+| **[orchestration/](catalog/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | Meta-agents for coordination |
 
 ## Patterns
 

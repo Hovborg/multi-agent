@@ -59,6 +59,39 @@ TASK_KEYWORDS: dict[str, list[str]] = {
     "proofread": ["content/editor"],
     "translate": ["content/translator"],
     "seo": ["content/seo-optimizer"],
+    # Finance tasks
+    "trading": ["finance/trading-analyst"],
+    "portfolio": ["finance/portfolio-optimizer"],
+    "financial": ["finance/financial-reporter"],
+    "fraud": ["finance/fraud-detector"],
+    "tax": ["finance/tax-advisor"],
+    "investment": ["finance/portfolio-optimizer"],
+    # Support tasks
+    "customer support": ["support/customer-support"],
+    "support ticket": ["support/ticket-router"],
+    "helpdesk": ["support/customer-support"],
+    "escalate": ["support/escalation-agent"],
+    "faq": ["support/knowledge-base-builder"],
+    # Legal tasks
+    "contract": ["legal/contract-reviewer"],
+    "legal": ["legal/legal-researcher"],
+    "compliance": ["legal/compliance-checker"],
+    "nda": ["legal/document-drafter"],
+    "terms of service": ["legal/document-drafter"],
+    "regulation": ["legal/compliance-checker"],
+    # Personal tasks
+    "email": ["personal/email-assistant"],
+    "meeting": ["personal/meeting-scheduler"],
+    "calendar": ["personal/meeting-scheduler"],
+    "notes": ["personal/note-taker"],
+    "todo": ["personal/task-manager"],
+    "schedule": ["personal/meeting-scheduler"],
+    # Security tasks
+    "vulnerability": ["security/vulnerability-scanner"],
+    "log analysis": ["security/log-analyzer"],
+    "access review": ["security/access-reviewer"],
+    "forensic": ["security/incident-analyst"],
+    "penetration": ["security/vulnerability-scanner"],
 }
 
 # Pattern recommendations based on task characteristics
