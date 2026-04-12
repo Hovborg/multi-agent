@@ -40,13 +40,14 @@ Stop reinventing agents. Start composing them.
 | | multi-agent | CrewAI | LangGraph | OpenAI SDK | Claude SDK |
 |---|:---:|:---:|:---:|:---:|:---:|
 | Framework-agnostic definitions | **Yes** | No | No | No | No |
-| Agent catalog with 50+ roles | **Yes** | ~10 | ~5 | ~3 | ~5 |
+| Export to any AI platform | **Yes** | No | No | No | No |
+| Agent catalog with 27+ roles | **Yes** | ~10 | ~5 | ~3 | ~5 |
 | Pattern library (8 patterns) | **Yes** | 2 | 3 | 2 | 2 |
 | Built-in cost estimation | **Yes** | No | No | No | No |
 | Agent recommendation engine | **Yes** | No | No | No | No |
 | Works with any LLM | **Yes** | Yes | Yes | OpenAI only | Claude only |
 | MCP native | **Yes** | Partial | Adapter | Yes | Yes |
-| Lines of core code | **~500** | 18K | 25K | 8K | 12K |
+| Lines of core code | **~600** | 18K | 25K | 8K | 12K |
 
 ## Quick Start
 
@@ -111,6 +112,36 @@ from multiagent.adapters import openai_sdk
 agent = openai_sdk.from_catalog("code/code-reviewer")
 result = agent.run("Review this code")
 ```
+
+### 4. Export to any AI platform
+
+```bash
+# Export for Claude Code (.agents/ skills)
+multiagent export code/code-reviewer claude-code -o .agents/skills
+
+# Export for Codex / OpenClaw (AGENTS.md format)
+multiagent export code/code-reviewer codex
+
+# Export for Google Gemini / ADK
+multiagent export code/code-reviewer gemini -o ./adk-agents
+
+# Export for ChatGPT (Custom GPT instructions)
+multiagent export code/code-reviewer chatgpt
+
+# Export just the system prompt (works with ANY LLM)
+multiagent export code/code-reviewer raw
+
+# Bulk export all agents in a category
+multiagent export-all claude-code -o .agents/skills -c code
+```
+
+| Target | Format | Works With |
+|--------|--------|------------|
+| `claude-code` | `.md` skill files | Claude Code, Claude Desktop |
+| `codex` | AGENTS.md sections | OpenAI Codex, OpenClaw |
+| `gemini` | ADK YAML config | Google Gemini, Vertex AI |
+| `chatgpt` | System instructions | ChatGPT, Custom GPTs |
+| `raw` | Plain system prompt | **Any LLM** — Ollama, LM Studio, llama.cpp, vLLM, etc. |
 
 ## Agent Catalog
 

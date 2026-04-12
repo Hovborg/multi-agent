@@ -8,6 +8,7 @@ from rich.table import Table
 
 from multiagent.catalog import Catalog
 from multiagent.cost import CostEstimator
+from multiagent.export import EXPORTERS, export_agent
 from multiagent.router import AgentRouter
 
 console = Console()
@@ -150,6 +151,65 @@ def categories() -> None:
     for cat in cats:
         count = len(catalog.by_category(cat))
         console.print(f"  [green]{cat}[/green] ({count} agents)")
+
+
+@main.command()
+@click.argument("agent_name")
+@click.argument("target", type=click.Choice(list(EXPORTERS)))
+@click.option("--output", "-o", type=click.Path(), help="Output directory")
+def export(agent_name: str, target: str, output: str | None) -> None:
+    """Export an agent to a platform format.
+
+    Targets: claude-code, codex, gemini, chatgpt, raw
+
+    Examples:
+        multiagent export code/code-reviewer claude-code
+        multiagent export code/code-reviewer chatgpt -o ./output
+        multiagent export code/code-reviewer raw
+    """
+    catalog = Catalog()
+    try:
+        agent = catalog.load(agent_name)
+    except KeyError as e:
+        console.print(f"[red]{e}[/red]")
+        return
+
+    from pathlib import Path
+
+    output_dir = Path(output) if output else None
+    content = export_agent(agent, target, output_dir)
+
+    if output_dir:
+        console.print(f"[green]Exported {agent.full_name} → {output_dir}/[/green]")
+    else:
+        console.print(content)
+
+
+@main.command(name="export-all")
+@click.argument("target", type=click.Choice(list(EXPORTERS)))
+@click.option("--output", "-o", type=click.Path(), required=True, help="Output directory")
+@click.option("--category", "-c", help="Filter by category")
+def export_all(target: str, output: str, category: str | None) -> None:
+    """Export all agents (or a category) to a platform format.
+
+    Examples:
+        multiagent export-all claude-code -o .agents/skills
+        multiagent export-all codex -o ./agents -c code
+        multiagent export-all gemini -o ./adk-agents
+    """
+    from pathlib import Path
+
+    catalog = Catalog()
+    agents = catalog.by_category(category) if category else catalog.list_all()
+
+    output_dir = Path(output)
+    for agent in agents:
+        agent_dir = output_dir / agent.category
+        export_agent(agent, target, agent_dir)
+
+    console.print(
+        f"[green]Exported {len(agents)} agents → {output_dir}/ (format: {target})[/green]"
+    )
 
 
 if __name__ == "__main__":
