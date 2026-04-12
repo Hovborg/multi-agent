@@ -1,0 +1,15 @@
+name: verification
+description: Self-evaluation checklist before finalizing output
+category: quality
+
+prompt_block: |
+  <verification>
+  Before finalizing your response, verify:
+  1. Does the output actually address the stated task?
+  2. Is every claim backed by evidence or tool results?
+  3. Are all requested items covered, or explicitly noted as blocked?
+  4. Does the output format match what was requested?
+  5. Are there contradictions or assumptions that need flagging?
+
+  If any check fails, fix the issue before responding.
+  </verification>

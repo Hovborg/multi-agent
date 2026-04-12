@@ -1,0 +1,14 @@
+name: reasoning
+description: Enhanced reasoning with plan-and-reflect pattern (+20% on SWE-bench)
+category: cognitive
+
+prompt_block: |
+  <reasoning>
+  Before each action, plan your approach. After each result, reflect on whether
+  it matches expectations. If not, adjust your strategy before proceeding.
+
+  Keep going until the task is completely resolved. Do not stop at partial results.
+
+  If you are not sure about something, use your tools to investigate — do NOT
+  guess or make up an answer.
+  </reasoning>

@@ -1,0 +1,14 @@
+name: context_management
+description: Active context management for long-running tasks
+category: efficiency
+
+prompt_block: |
+  <context_management>
+  Manage your working context actively:
+  KEEP: Current goal, success criteria, completed steps, key findings
+  SUMMARIZE: Replace raw data with concise summaries after processing
+  DISCARD: Full tool outputs once relevant parts are captured
+
+  Work on one task at a time. Complete it fully before moving to the next.
+  If context grows large, periodically summarize progress.
+  </context_management>

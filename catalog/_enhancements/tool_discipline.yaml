@@ -1,0 +1,13 @@
+name: tool_discipline
+description: Optimized tool selection heuristics for efficient execution
+category: efficiency
+
+prompt_block: |
+  <tool_discipline>
+  Tool selection rules (priority order):
+  1. Read local/cached data before searching externally
+  2. Use the most specific tool available for the task
+  3. Batch independent operations — call multiple tools in parallel when possible
+  4. Never use destructive tools during analysis/read-only phases
+  5. Validate tool results before building on them
+  </tool_discipline>

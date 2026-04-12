@@ -8,6 +8,7 @@ from rich.table import Table
 
 from multiagent.catalog import Catalog
 from multiagent.cost import CostEstimator
+from multiagent.enhance import enhance_agent, list_enhancements
 from multiagent.export import EXPORTERS, export_agent
 from multiagent.router import AgentRouter
 
@@ -210,6 +211,71 @@ def export_all(target: str, output: str, category: str | None) -> None:
     console.print(
         f"[green]Exported {len(agents)} agents → {output_dir}/ (format: {target})[/green]"
     )
+
+
+@main.command()
+@click.argument("agent_name")
+@click.option(
+    "--profile",
+    "-p",
+    type=click.Choice(["category", "all", "minimal", "none"]),
+    default="category",
+    help="Enhancement profile",
+)
+@click.option("--target", "-t", type=click.Choice(list(EXPORTERS)), help="Also export")
+@click.option("--output", "-o", type=click.Path(), help="Output directory (with --target)")
+def enhance(agent_name: str, profile: str, target: str | None, output: str | None) -> None:
+    """Enhance an agent with smart prompt techniques.
+
+    Profiles:
+      category  — Enhancements tuned for the agent's category (default)
+      all       — All 8 enhancement blocks
+      minimal   — Just reasoning + verification
+      none      — Show base prompt without enhancements
+
+    Examples:
+        multiagent enhance code/code-reviewer
+        multiagent enhance code/code-reviewer -p all
+        multiagent enhance code/code-reviewer -p all -t claude-code -o .agents/
+    """
+    catalog = Catalog()
+    try:
+        agent = catalog.load(agent_name)
+    except KeyError as e:
+        console.print(f"[red]{e}[/red]")
+        return
+
+    enhanced = enhance_agent(agent, profile=profile)
+
+    if target:
+        from pathlib import Path
+
+        output_dir = Path(output) if output else None
+        content = export_agent(enhanced, target, output_dir)
+        if output_dir:
+            console.print(f"[green]Enhanced + exported {agent.full_name} → {output_dir}/[/green]")
+        else:
+            console.print(content)
+    else:
+        console.print(f"\n[bold green]{agent.full_name}[/bold green] (enhanced: {profile})\n")
+        console.print(enhanced.system_prompt)
+
+
+@main.command()
+def enhancements() -> None:
+    """List all available smart prompt enhancements."""
+    available = list_enhancements()
+    console.print(f"\n[bold]Smart Enhancements[/bold] ({len(available)}):\n")
+
+    table = Table(show_header=True, header_style="bold cyan")
+    table.add_column("Name", style="green")
+    table.add_column("Category", style="dim")
+    table.add_column("Description")
+
+    for e in available:
+        table.add_row(e["name"], e["category"], e["description"])
+
+    console.print(table)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,15 @@
+name: error_recovery
+description: 5-level error recovery hierarchy for resilient agent behavior
+category: resilience
+
+prompt_block: |
+  <error_recovery>
+  When something fails, follow this hierarchy:
+  LEVEL 0 — RETRY: Same call, wait briefly (transient errors like timeouts)
+  LEVEL 1 — REPHRASE: Same intent, different parameters or query
+  LEVEL 2 — REROUTE: Try an alternative tool or data source
+  LEVEL 3 — REPLAN: Abandon current approach, design a new strategy
+  LEVEL 4 — ESCALATE: Report what failed and why, request human guidance
+
+  Never give up after a single failure. Never make up results when a tool fails.
+  </error_recovery>

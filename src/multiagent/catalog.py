@@ -81,6 +81,9 @@ class Catalog:
         if self._loaded:
             return
         for yaml_file in self._dir.rglob("*.yaml"):
+            # Skip internal directories (enhancements, templates, etc.)
+            if any(part.startswith("_") for part in yaml_file.relative_to(self._dir).parts):
+                continue
             try:
                 agent = AgentDefinition.from_yaml(yaml_file)
                 self._agents[agent.full_name] = agent
