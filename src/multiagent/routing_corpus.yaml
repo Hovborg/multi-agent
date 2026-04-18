@@ -159,3 +159,43 @@ cases:
     expected_agents: [security/incident-analyst]
     expected_pattern: supervisor-worker
     expected_target: a2a-agent-card
+  - id: da-pr-tests-openclaw
+    task: Gennemgå denne PR og skriv manglende tests til OpenClaw.
+    expected_agents: [code/code-reviewer, code/test-writer]
+    expected_pattern: supervisor-worker
+    expected_target: codex-config
+  - id: da-blog-chatgpt
+    task: Skriv og rediger et blogindlæg til ChatGPT.
+    expected_agents: [content/writer, content/editor]
+    expected_pattern: reflection
+    expected_target: chatgpt
+  - id: da-security-raw
+    task: Lav sårbarhedsscanning og loganalyse som rå system prompt.
+    expected_agents: [security/vulnerability-scanner, security/log-analyzer]
+    expected_pattern: supervisor-worker
+    expected_target: raw
+  - id: da-market-research-default
+    task: Undersøg markedet og faktatjek kilderne.
+    expected_agents: [research/deep-researcher, research/fact-checker]
+    expected_pattern: parallel
+    expected_target: codex-config
+  - id: ambiguous-default-local
+    task: Review contract compliance for the default local setup.
+    expected_agents: [legal/contract-reviewer, legal/compliance-checker]
+    expected_pattern: supervisor-worker
+    expected_target: codex-config
+  - id: da-meeting-claude-code
+    task: Planlæg et møde i kalenderen til Claude Code.
+    expected_agents: [personal/meeting-scheduler]
+    expected_pattern: supervisor-worker
+    expected_target: claude-code
+  - id: da-support-a2a
+    task: Route et kundesupport supportticket til korrekt niveau som A2A.
+    expected_agents: [support/customer-support, support/ticket-router]
+    expected_pattern: handoff
+    expected_target: a2a-agent-card
+  - id: da-translate-agentskill
+    task: Oversæt nyhedsbrevet og pak det som AgentSkill.
+    expected_agents: [content/translator]
+    expected_pattern: supervisor-worker
+    expected_target: agentskill

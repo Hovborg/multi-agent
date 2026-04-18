@@ -26,7 +26,7 @@ class RoutingEvalCase:
     expected_target: str
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "RoutingEvalCase":
+    def from_dict(cls, data: dict[str, Any]) -> RoutingEvalCase:
         expected_target = str(data["expected_target"])
         if expected_target not in EXPORTERS:
             raise ValueError(f"Unknown expected target: {expected_target}")

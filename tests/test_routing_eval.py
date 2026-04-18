@@ -15,12 +15,21 @@ CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
 def test_loads_default_routing_corpus_with_expected_fields():
     cases = load_routing_corpus()
 
-    assert 30 <= len(cases) <= 50
+    assert 40 <= len(cases) <= 50
     assert all(case.id for case in cases)
     assert all(case.task for case in cases)
     assert all(case.expected_agents for case in cases)
     assert all(case.expected_pattern for case in cases)
     assert all(case.expected_target for case in cases)
+
+
+def test_default_corpus_covers_multilingual_and_ambiguous_target_cases():
+    case_ids = {case.id for case in load_routing_corpus()}
+
+    assert "da-pr-tests-openclaw" in case_ids
+    assert "da-blog-chatgpt" in case_ids
+    assert "da-security-raw" in case_ids
+    assert "ambiguous-default-local" in case_ids
 
 
 def test_default_routing_corpus_passes_against_current_router():

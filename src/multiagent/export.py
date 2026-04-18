@@ -295,7 +295,8 @@ def export_agent(
 
     Args:
         agent: The agent definition to export
-        target: Target platform (claude-code, agentskill, a2a-agent-card, codex, codex-config, gemini, chatgpt, raw)
+        target: Target platform (claude-code, agentskill, a2a-agent-card, codex,
+            codex-config, gemini, chatgpt, raw)
         output_dir: Optional directory to write the file to
 
     Returns:
