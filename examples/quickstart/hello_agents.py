@@ -5,7 +5,7 @@ Usage:
     python hello_agents.py
 """
 
-from multiagent import Catalog, CostEstimator, AgentRouter
+from multiagent import AgentRouter, Catalog, CostEstimator
 
 # 1. Browse the catalog
 catalog = Catalog()

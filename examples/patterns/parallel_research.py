@@ -25,9 +25,9 @@ fact_checker = catalog.load("research/fact-checker")
 
 print("Parallel Research Pattern")
 print("=" * 50)
-print(f"\nPhase 1 — Parallel research (3 independent agents):")
+print("\nPhase 1 — Parallel research (3 independent agents):")
 print(f"  Each: {researcher.full_name} — {researcher.description}")
-print(f"\nPhase 2 — Verification:")
+print("\nPhase 2 — Verification:")
 print(f"  {fact_checker.full_name} — {fact_checker.description}")
 
 # Compose: 3 researchers in parallel, fact-checker merges

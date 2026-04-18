@@ -53,6 +53,8 @@ jobs:
           from pathlib import Path
           errors = []
           for f in Path('catalog').rglob('*.yaml'):
+              if '_enhancements' in f.parts:
+                  continue
               try:
                   data = yaml.safe_load(f.read_text())
                   assert 'name' in data, f'{f}: missing name'

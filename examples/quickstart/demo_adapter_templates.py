@@ -5,7 +5,6 @@ from pprint import pprint
 from multiagent import Catalog
 from multiagent.adapters import crewai, google_adk, openai_sdk, smolagents
 
-
 catalog = Catalog()
 reviewer = catalog.load("code/code-reviewer")
 test_writer = catalog.load("code/test-writer")
