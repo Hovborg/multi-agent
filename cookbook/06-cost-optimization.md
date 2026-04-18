@@ -149,7 +149,7 @@ for label, model in [("Sonnet", "claude-sonnet-4-6"), ("Haiku", "claude-haiku-4-
 
 You have completed the cookbook. Here are some directions to explore:
 
-- Browse the full [Agent Catalog](../catalog/) for all 50+ agent definitions
+- Browse the full [Agent Catalog](../catalog/) for all catalog agent definitions
 - Read the [Pattern Documentation](../docs/patterns/) for advanced orchestration
 - Check the [Framework Adapters](../docs/frameworks/) for CrewAI, LangGraph, and more
 - Try the [Interactive Playground](../web/index.html) to build teams visually

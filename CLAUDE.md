@@ -29,3 +29,8 @@ ruff check .
 - YAML for agent definitions, Python for logic
 - All agents must have: name, description, system_prompt, category, cost_profile
 - MIT license
+
+## GitHub
+
+- **Repo:** https://github.com/Hovborg/multi-agent
+- **Klon:** `git clone https://github.com/Hovborg/multi-agent.git`

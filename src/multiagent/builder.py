@@ -59,7 +59,14 @@ class TeamConfig:
         paths = []
         for agent in self.get_enhanced_agents():
             export_agent(agent, self.export_target, output_dir)
-            ext = {"claude-code": ".md", "codex": ".md", "gemini": ".yaml"}.get(
+            ext = {
+                "a2a-agent-card": ".agent-card.json",
+                "agentskill": ".md",
+                "claude-code": ".md",
+                "codex": ".md",
+                "codex-config": ".toml",
+                "gemini": ".yaml",
+            }.get(
                 self.export_target, ".txt"
             )
             paths.append(output_dir / f"{agent.name}{ext}")
@@ -103,8 +110,11 @@ ENHANCEMENT_PROFILES = [
 ]
 
 EXPORT_TARGETS = [
-    ("claude-code", "Claude Code (.agents/ skills)"),
+    ("a2a-agent-card", "A2A Agent Card JSON"),
+    ("claude-code", "Claude Code (.claude/agents subagents)"),
+    ("agentskill", "Portable AgentSkills (SKILL.md)"),
     ("codex", "OpenAI Codex / OpenClaw (AGENTS.md)"),
+    ("codex-config", "OpenAI Codex project config (.codex/config.toml)"),
     ("gemini", "Google Gemini / ADK (YAML)"),
     ("chatgpt", "ChatGPT (Custom GPT instructions)"),
     ("raw", "Plain system prompt (any LLM)"),

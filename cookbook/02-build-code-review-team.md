@@ -61,17 +61,17 @@ print(f"Enhanced prompt: {len(smart_reviewer.system_prompt)} chars")
 
 ## Step 4 -- Export to Claude Code
 
-Generate skill files that Claude Code auto-discovers:
+Generate Claude Code subagent files:
 
 ```python
 from multiagent import export_agent
 
 for agent in [smart_reviewer, smart_test_writer, smart_auditor]:
-    output = export_agent(agent, target="claude-code", output_dir=".agents/skills")
+    output = export_agent(agent, target="claude-code", output_dir=".claude/agents")
     print(f"Exported: {agent.name}.md")
 ```
 
-This creates files in `.agents/skills/` that Claude Code picks up automatically.
+This creates files in `.claude/agents/` that Claude Code can use as project subagents.
 
 ## Step 5 -- Visualize the team
 
@@ -130,7 +130,7 @@ team = patterns.supervisor_worker(
 print(team.describe())
 
 for agent in [smart_reviewer, smart_test_writer, smart_auditor]:
-    export_agent(agent, target="claude-code", output_dir=".agents/skills")
+    export_agent(agent, target="claude-code", output_dir=".claude/agents")
 
 print("\n" + visualize_team([reviewer, test_writer, security_auditor], pattern="supervisor-worker"))
 print("\n" + str(CostEstimator.estimate_team([reviewer, test_writer, security_auditor], extra_input_tokens=5000)))

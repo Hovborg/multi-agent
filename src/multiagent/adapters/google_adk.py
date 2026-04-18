@@ -32,6 +32,33 @@ def to_agent_config(definition: AgentDefinition) -> dict[str, Any]:
     }
 
 
+def to_workflow_config(
+    definitions: list[AgentDefinition],
+    workflow: str = "sequential",
+    name: str | None = None,
+) -> dict[str, Any]:
+    """Create a Google ADK workflow config for multiple catalog agents."""
+    workflow_types = {
+        "sequential": "SequentialAgent",
+        "parallel": "ParallelAgent",
+    }
+    if workflow not in workflow_types:
+        expected = ", ".join(sorted(workflow_types))
+        raise ValueError(f"Unsupported Google ADK workflow '{workflow}'. Expected: {expected}")
+
+    workflow_name = name or f"{workflow}_{'_'.join(_agent_name(agent) for agent in definitions)}"
+    return {
+        "workflow": workflow,
+        "agent_type": workflow_types[workflow],
+        "name": workflow_name,
+        "sub_agents": [to_agent_config(definition) for definition in definitions],
+    }
+
+
+def _agent_name(definition: AgentDefinition) -> str:
+    return definition.name.replace("-", "_")
+
+
 def from_catalog(
     agent_names: str | list[str],
     catalog: Catalog | None = None,

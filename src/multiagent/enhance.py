@@ -224,6 +224,12 @@ def enhance_agent(
         cost_profile=agent.cost_profile,
         works_with=agent.works_with,
         recommended_patterns=agent.recommended_patterns,
+        orchestration=agent.orchestration,
+        safety=agent.safety,
+        observability=agent.observability,
+        outputs=agent.outputs,
+        context=agent.context,
+        protocols=agent.protocols,
         _raw=agent._raw,
     )
 
@@ -233,7 +239,12 @@ def list_enhancements(enhancements_dir: Path | None = None) -> list[dict[str, An
     d = enhancements_dir or ENHANCEMENTS_DIR
     results = []
     for path in sorted(d.glob("*.yaml")):
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except yaml.YAMLError:
+            continue
+        if not isinstance(data, dict):
+            continue
         results.append({
             "name": data.get("name", path.stem),
             "description": data.get("description", ""),

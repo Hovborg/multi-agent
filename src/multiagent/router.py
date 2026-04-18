@@ -2,97 +2,119 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
+from typing import Any
 
 from multiagent.catalog import AgentDefinition, Catalog
 
-# Keywords mapped to agent categories and specific agents
-TASK_KEYWORDS: dict[str, list[str]] = {
+
+@dataclass(frozen=True)
+class TaskRule:
+    """Weighted phrase rule for routing a task to one or more catalog agents."""
+
+    phrase: str
+    agents: tuple[str, ...]
+    weight: int
+    reason: str
+
+
+TASK_RULES: tuple[TaskRule, ...] = (
     # Code tasks
-    "review": ["code/code-reviewer"],
-    "code review": ["code/code-reviewer", "code/security-auditor"],
-    "pr review": ["code/code-reviewer", "code/pr-summarizer"],
-    "generate code": ["code/code-generator"],
-    "write code": ["code/code-generator"],
-    "implement": ["code/code-generator"],
-    "test": ["code/test-writer"],
-    "write tests": ["code/test-writer"],
-    "unit test": ["code/test-writer"],
-    "refactor": ["code/refactorer"],
-    "debug": ["code/debugger"],
-    "fix bug": ["code/debugger"],
-    "security": ["code/security-auditor"],
-    "audit": ["code/security-auditor"],
-    "documentation": ["code/documentation-writer"],
-    "docs": ["code/documentation-writer"],
-    "pr summary": ["code/pr-summarizer"],
+    TaskRule("code review", ("code/code-reviewer", "code/security-auditor"), 8, "code review"),
+    TaskRule("pr review", ("code/code-reviewer", "code/pr-summarizer"), 8, "PR review"),
+    TaskRule("pull request", ("code/code-reviewer", "code/pr-summarizer"), 7, "pull request"),
+    TaskRule("pr", ("code/code-reviewer",), 4, "PR shorthand"),
+    TaskRule("review", ("code/code-reviewer",), 2, "review request"),
+    TaskRule("generate code", ("code/code-generator",), 8, "code generation"),
+    TaskRule("write code", ("code/code-generator",), 8, "code generation"),
+    TaskRule("implement", ("code/code-generator",), 6, "implementation"),
+    TaskRule("missing tests", ("code/test-writer",), 8, "missing tests"),
+    TaskRule("write tests", ("code/test-writer",), 8, "test writing"),
+    TaskRule("unit tests", ("code/test-writer",), 7, "unit tests"),
+    TaskRule("unit test", ("code/test-writer",), 7, "unit test"),
+    TaskRule("tests", ("code/test-writer",), 5, "tests"),
+    TaskRule("test", ("code/test-writer",), 4, "test"),
+    TaskRule("refactor", ("code/refactorer",), 7, "refactoring"),
+    TaskRule("debug", ("code/debugger",), 7, "debugging"),
+    TaskRule("fix bug", ("code/debugger",), 7, "bug fixing"),
+    TaskRule("security audit", ("code/security-auditor",), 8, "security audit"),
+    TaskRule("security", ("code/security-auditor",), 4, "security"),
+    TaskRule("documentation", ("code/documentation-writer",), 6, "documentation"),
+    TaskRule("docs", ("code/documentation-writer",), 5, "documentation"),
+    TaskRule("pr summary", ("code/pr-summarizer",), 8, "PR summary"),
     # Research tasks
-    "research": ["research/deep-researcher"],
-    "investigate": ["research/deep-researcher"],
-    "scrape": ["research/web-scraper"],
-    "extract data": ["research/web-scraper"],
-    "fact check": ["research/fact-checker"],
-    "verify": ["research/fact-checker"],
-    "paper": ["research/paper-analyst"],
-    "academic": ["research/paper-analyst"],
-    "competitive": ["research/competitive-intel"],
-    "market research": ["research/competitive-intel"],
+    TaskRule("research", ("research/deep-researcher",), 7, "research"),
+    TaskRule("investigate", ("research/deep-researcher",), 7, "investigation"),
+    TaskRule("scrape", ("research/web-scraper",), 7, "web scraping"),
+    TaskRule("extract data", ("research/web-scraper",), 7, "data extraction"),
+    TaskRule("fact check", ("research/fact-checker",), 8, "fact checking"),
+    TaskRule("verify", ("research/fact-checker",), 5, "verification"),
+    TaskRule("paper", ("research/paper-analyst",), 6, "paper analysis"),
+    TaskRule("academic", ("research/paper-analyst",), 6, "academic analysis"),
+    TaskRule("competitive", ("research/competitive-intel",), 6, "competitive intelligence"),
+    TaskRule("market research", ("research/competitive-intel",), 8, "market research"),
     # Data tasks
-    "analyze data": ["data/data-analyst"],
-    "data analysis": ["data/data-analyst"],
-    "sql": ["data/sql-generator"],
-    "query": ["data/sql-generator"],
-    "report": ["data/report-writer"],
+    TaskRule("analyze data", ("data/data-analyst",), 8, "data analysis"),
+    TaskRule("data analysis", ("data/data-analyst",), 8, "data analysis"),
+    TaskRule("sql", ("data/sql-generator",), 7, "SQL"),
+    TaskRule("query", ("data/sql-generator",), 5, "query generation"),
+    TaskRule("report", ("data/report-writer",), 4, "reporting"),
     # DevOps tasks
-    "ci/cd": ["devops/ci-cd-agent"],
-    "pipeline": ["devops/ci-cd-agent"],
-    "infrastructure": ["devops/infra-provisioner"],
-    "terraform": ["devops/infra-provisioner"],
-    "monitoring": ["devops/monitoring-agent"],
-    "alert": ["devops/monitoring-agent"],
-    "incident": ["devops/incident-responder"],
-    # Content tasks
-    "write": ["content/writer"],
-    "article": ["content/writer"],
-    "blog": ["content/writer"],
-    "edit": ["content/editor"],
-    "proofread": ["content/editor"],
-    "translate": ["content/translator"],
-    "seo": ["content/seo-optimizer"],
+    TaskRule("ci/cd", ("devops/ci-cd-agent",), 8, "CI/CD"),
+    TaskRule("pipeline", ("devops/ci-cd-agent",), 5, "pipeline"),
+    TaskRule("infrastructure", ("devops/infra-provisioner",), 6, "infrastructure"),
+    TaskRule("terraform", ("devops/infra-provisioner",), 8, "Terraform"),
+    TaskRule("monitoring", ("devops/monitoring-agent",), 7, "monitoring"),
+    TaskRule("alert", ("devops/monitoring-agent",), 5, "alerting"),
+    TaskRule("incident", ("devops/incident-responder",), 6, "incident response"),
+    # Content tasks. Keep these contextual: bare "write" is too broad for code tasks.
+    TaskRule("blog post", ("content/writer",), 8, "blog post"),
+    TaskRule("write blog", ("content/writer",), 8, "blog writing"),
+    TaskRule("write article", ("content/writer",), 8, "article writing"),
+    TaskRule("draft article", ("content/writer",), 7, "article drafting"),
+    TaskRule("article", ("content/writer",), 5, "article"),
+    TaskRule("newsletter", ("content/writer",), 6, "newsletter"),
+    TaskRule("content", ("content/writer",), 5, "content"),
+    TaskRule("edit a blog post", ("content/editor",), 8, "blog editing"),
+    TaskRule("edit blog", ("content/editor",), 7, "blog editing"),
+    TaskRule("edit article", ("content/editor",), 7, "article editing"),
+    TaskRule("proofread", ("content/editor",), 7, "proofreading"),
+    TaskRule("translate", ("content/translator",), 7, "translation"),
+    TaskRule("seo", ("content/seo-optimizer",), 7, "SEO"),
     # Finance tasks
-    "trading": ["finance/trading-analyst"],
-    "portfolio": ["finance/portfolio-optimizer"],
-    "financial": ["finance/financial-reporter"],
-    "fraud": ["finance/fraud-detector"],
-    "tax": ["finance/tax-advisor"],
-    "investment": ["finance/portfolio-optimizer"],
+    TaskRule("trading", ("finance/trading-analyst",), 7, "trading analysis"),
+    TaskRule("portfolio", ("finance/portfolio-optimizer",), 7, "portfolio optimization"),
+    TaskRule("financial", ("finance/financial-reporter",), 6, "financial reporting"),
+    TaskRule("fraud", ("finance/fraud-detector",), 7, "fraud detection"),
+    TaskRule("tax", ("finance/tax-advisor",), 7, "tax analysis"),
+    TaskRule("investment", ("finance/portfolio-optimizer",), 6, "investment analysis"),
     # Support tasks
-    "customer support": ["support/customer-support"],
-    "support ticket": ["support/ticket-router"],
-    "helpdesk": ["support/customer-support"],
-    "escalate": ["support/escalation-agent"],
-    "faq": ["support/knowledge-base-builder"],
+    TaskRule("customer support", ("support/customer-support",), 8, "customer support"),
+    TaskRule("support ticket", ("support/ticket-router",), 8, "support ticket routing"),
+    TaskRule("helpdesk", ("support/customer-support",), 7, "helpdesk"),
+    TaskRule("faq", ("support/knowledge-base-builder",), 6, "FAQ"),
     # Legal tasks
-    "contract": ["legal/contract-reviewer"],
-    "legal": ["legal/legal-researcher"],
-    "compliance": ["legal/compliance-checker"],
-    "nda": ["legal/document-drafter"],
-    "terms of service": ["legal/document-drafter"],
-    "regulation": ["legal/compliance-checker"],
+    TaskRule("contract", ("legal/contract-reviewer",), 8, "contract review"),
+    TaskRule("legal", ("legal/legal-researcher",), 7, "legal research"),
+    TaskRule("compliance", ("legal/compliance-checker",), 7, "compliance"),
+    TaskRule("nda", ("legal/document-drafter",), 7, "NDA drafting"),
+    TaskRule("terms of service", ("legal/document-drafter",), 7, "terms drafting"),
+    TaskRule("regulation", ("legal/compliance-checker",), 6, "regulation"),
     # Personal tasks
-    "email": ["personal/email-assistant"],
-    "meeting": ["personal/meeting-scheduler"],
-    "calendar": ["personal/meeting-scheduler"],
-    "notes": ["personal/note-taker"],
-    "todo": ["personal/task-manager"],
-    "schedule": ["personal/meeting-scheduler"],
+    TaskRule("email", ("personal/email-assistant",), 6, "email"),
+    TaskRule("meeting", ("personal/meeting-scheduler",), 6, "meeting scheduling"),
+    TaskRule("calendar", ("personal/meeting-scheduler",), 6, "calendar scheduling"),
+    TaskRule("notes", ("personal/note-taker",), 5, "notes"),
+    TaskRule("todo", ("personal/task-manager",), 5, "task management"),
+    TaskRule("schedule", ("personal/meeting-scheduler",), 5, "scheduling"),
     # Security tasks
-    "vulnerability": ["security/vulnerability-scanner"],
-    "log analysis": ["security/log-analyzer"],
-    "access review": ["security/access-reviewer"],
-    "forensic": ["security/incident-analyst"],
-    "penetration": ["security/vulnerability-scanner"],
-}
+    TaskRule("vulnerability", ("security/vulnerability-scanner",), 8, "vulnerability scanning"),
+    TaskRule("log analysis", ("security/log-analyzer",), 8, "log analysis"),
+    TaskRule("access review", ("security/access-reviewer",), 8, "access review"),
+    TaskRule("forensic", ("security/incident-analyst",), 7, "forensic analysis"),
+    TaskRule("penetration", ("security/vulnerability-scanner",), 7, "penetration testing"),
+)
 
 # Pattern recommendations based on task characteristics
 PATTERN_RULES: list[tuple[list[str], str, str]] = [
@@ -117,6 +139,8 @@ class Recommendation:
     pattern_reason: str
     confidence: float  # 0.0 to 1.0
     alternatives: list[str] = field(default_factory=list)
+    reasons: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     def describe(self) -> str:
         lines = [
@@ -131,6 +155,26 @@ class Recommendation:
             lines.append(f"  Alternatives: {', '.join(self.alternatives)}")
         return "\n".join(lines)
 
+    def to_dict(self) -> dict[str, Any]:
+        """Return a machine-readable recommendation payload."""
+        return {
+            "pattern": self.pattern,
+            "pattern_reason": self.pattern_reason,
+            "confidence": self.confidence,
+            "agents": [
+                {
+                    "name": agent.full_name,
+                    "description": agent.description,
+                    "category": agent.category,
+                    "tags": agent.tags,
+                }
+                for agent in self.agents
+            ],
+            "alternatives": self.alternatives,
+            "reasons": self.reasons,
+            "warnings": self.warnings,
+        }
+
 
 class AgentRouter:
     """Recommend agents and patterns based on task description."""
@@ -142,24 +186,42 @@ class AgentRouter:
         """Given a task description, recommend agents and an orchestration pattern."""
         task_lower = task.lower()
 
-        # Find matching agents
-        matched_agent_names: list[str] = []
-        for keyword, agents in TASK_KEYWORDS.items():
-            if keyword in task_lower:
-                for agent_name in agents:
-                    if agent_name not in matched_agent_names:
-                        matched_agent_names.append(agent_name)
+        # Find matching agents with weighted phrase rules.
+        agent_scores: dict[str, int] = {}
+        agent_reasons: dict[str, list[str]] = {}
+        first_seen: dict[str, int] = {}
+        for index, rule in enumerate(TASK_RULES):
+            if not _contains_phrase(task_lower, rule.phrase):
+                continue
+            for agent_name in rule.agents:
+                agent_scores[agent_name] = agent_scores.get(agent_name, 0) + rule.weight
+                agent_reasons.setdefault(agent_name, []).append(
+                    f"{agent_name}: matched '{rule.phrase}' ({rule.reason}, +{rule.weight})"
+                )
+                first_seen.setdefault(agent_name, index)
+
+        matched_agent_names = [
+            name
+            for name, _ in sorted(
+                agent_scores.items(),
+                key=lambda item: (-item[1], first_seen[item[0]]),
+            )
+        ]
 
         # Fall back to catalog search if no keyword match
+        reasons: list[str] = []
         if not matched_agent_names:
             search_results = self.catalog.search(task)
             matched_agent_names = [a.full_name for a in search_results[:3]]
+            if matched_agent_names:
+                reasons.append("No routing rules matched; used catalog search fallback.")
 
         # Load agent definitions
         agents = []
         for name in matched_agent_names:
             try:
                 agents.append(self.catalog.load(name))
+                reasons.extend(agent_reasons.get(name, []))
             except KeyError:
                 continue
 
@@ -169,6 +231,7 @@ class AgentRouter:
             for c in companions[:2]:
                 if c.full_name not in matched_agent_names:
                     agents.append(c)
+                    reasons.append(f"{c.full_name}: companion for {agents[0].full_name}")
 
         # Recommend pattern
         pattern = "supervisor-worker"  # Default
@@ -176,20 +239,31 @@ class AgentRouter:
         best_score = 0
 
         for keywords, pat, reason in PATTERN_RULES:
-            score = sum(1 for kw in keywords if kw in task_lower)
+            score = sum(1 for kw in keywords if _contains_phrase(task_lower, kw))
             if score > best_score:
                 best_score = score
                 pattern = pat
                 pattern_reason = reason
 
         # Calculate confidence
-        confidence = min(1.0, (len(agents) * 0.3) + (best_score * 0.2) + 0.1)
+        best_agent_score = max(agent_scores.values(), default=0)
+        confidence = min(
+            1.0,
+            0.25 + (best_agent_score * 0.08) + (len(agents) * 0.08) + (best_score * 0.1),
+        )
 
         # Find alternative patterns
         alternatives = []
         for keywords, pat, _ in PATTERN_RULES:
-            if pat != pattern and any(kw in task_lower for kw in keywords):
+            if pat != pattern and any(_contains_phrase(task_lower, kw) for kw in keywords):
                 alternatives.append(pat)
+
+        warnings = []
+        categories = sorted({agent.category for agent in agents})
+        if len(categories) > 1:
+            warnings.append(f"Multiple categories matched: {', '.join(categories)}")
+        if not agents:
+            warnings.append("No agents matched the task.")
 
         return Recommendation(
             agents=agents,
@@ -197,4 +271,13 @@ class AgentRouter:
             pattern_reason=pattern_reason,
             confidence=confidence,
             alternatives=alternatives[:3],
+            reasons=reasons,
+            warnings=warnings,
         )
+
+
+def _contains_phrase(text: str, phrase: str) -> bool:
+    """Match a phrase on word boundaries while allowing flexible whitespace."""
+    escaped_words = [re.escape(word) for word in phrase.lower().split()]
+    pattern = r"\s+".join(escaped_words)
+    return re.search(rf"(?<![\w-]){pattern}(?![\w-])", text) is not None

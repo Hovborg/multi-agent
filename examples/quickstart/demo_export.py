@@ -1,8 +1,8 @@
 """Demo: Export agents to every AI platform.
 
 Shows how to use multi-agent's export system to convert catalog agents
-into platform-specific formats for Claude Code, Codex, Gemini, ChatGPT,
-or any other LLM.
+into platform-specific formats for Claude Code, Codex, Codex config,
+Gemini, ChatGPT, A2A discovery, or any other LLM.
 
 Usage:
     pip install multi-agent
@@ -22,8 +22,11 @@ print(f"Description: {agent.description}\n")
 
 # Show all export formats
 targets = {
-    "claude-code": "Claude Code (.agents/ skill file)",
+    "a2a-agent-card": "A2A Agent Card JSON",
+    "claude-code": "Claude Code (.claude/agents subagent file)",
+    "agentskill": "Portable AgentSkills (SKILL.md-style)",
     "codex": "OpenAI Codex / OpenClaw (AGENTS.md)",
+    "codex-config": "OpenAI Codex project config (.codex/config.toml)",
     "gemini": "Google Gemini / ADK (YAML config)",
     "chatgpt": "ChatGPT (Custom GPT instructions)",
     "raw": "Any LLM (plain system prompt)",
@@ -46,7 +49,10 @@ for target, description in targets.items():
 output_dir = Path("/tmp/multi-agent-export-demo")
 print(f"\nBulk exporting all code agents to {output_dir}/")
 for agent in catalog.by_category("code"):
+    export_agent(agent, "a2a-agent-card", output_dir=output_dir / "a2a-agent-card" / "code")
     export_agent(agent, "claude-code", output_dir=output_dir / "claude-code" / "code")
+    export_agent(agent, "agentskill", output_dir=output_dir / "agentskill" / "code")
+    export_agent(agent, "codex-config", output_dir=output_dir / "codex-config" / "code")
     export_agent(agent, "raw", output_dir=output_dir / "raw" / "code")
 
 print(f"Done! Check {output_dir}/ for exported files.")

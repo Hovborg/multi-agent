@@ -37,11 +37,9 @@
 
 ---
 
-**50+ battle-tested agent definitions. 11 categories. 8 orchestration patterns. 6 framework adapters. 5 export targets. Zero lock-in.**
+**48 catalog agent definitions. 11 categories. 8 orchestration patterns. 6 framework adapters. 8 export targets. Zero lock-in.**
 
 `multi-agent` is a framework-agnostic catalog of production-ready AI agent patterns. Define your agents once in YAML, run them on CrewAI, LangGraph, OpenAI Agents SDK, Claude SDK, Google ADK, or smolagents.
-
-> *"57% of enterprise agent failures are orchestration failures, not model failures."* — Anthropic, 2026
 
 Stop reinventing agents. Start composing them.
 
@@ -51,13 +49,12 @@ Stop reinventing agents. Start composing them.
 |---|:---:|:---:|:---:|:---:|:---:|
 | Framework-agnostic definitions | **Yes** | No | No | No | No |
 | Export to any AI platform | **Yes** | No | No | No | No |
-| Agent catalog with 50+ roles | **Yes** | ~10 | ~5 | ~3 | ~5 |
+| Reusable agent catalog | **Yes** | Framework-specific | Framework-specific | Framework-specific | Framework-specific |
 | Pattern library (8 patterns) | **Yes** | 2 | 3 | 2 | 2 |
 | Built-in cost estimation | **Yes** | No | No | No | No |
 | Agent recommendation engine | **Yes** | No | No | No | No |
 | Works with any LLM | **Yes** | Yes | Yes | OpenAI only | Claude only |
 | MCP native | **Yes** | Partial | Adapter | Yes | Yes |
-| Lines of core code | **~600** | 18K | 25K | 8K | 12K |
 
 ## Quick Start
 
@@ -126,11 +123,21 @@ result = agent.run("Review this code")
 ### 4. Export to any AI platform
 
 ```bash
-# Export for Claude Code (.agents/ skills)
-multiagent export code/code-reviewer claude-code -o .agents/skills
+# Export for Claude Code (.claude/agents subagents)
+multiagent export code/code-reviewer claude-code -o .claude/agents
+
+# Export as a portable AgentSkills-style SKILL.md file
+multiagent export code/code-reviewer agentskill -o .agents/skills/code-reviewer
+
+# Export as an A2A Agent Card JSON document
+multiagent export code/code-reviewer a2a-agent-card -o ./agent-cards
 
 # Export for Codex / OpenClaw (AGENTS.md format)
 multiagent export code/code-reviewer codex
+
+# Export for Codex project config (.codex/config.toml snippet)
+mkdir -p .codex
+multiagent export code/code-reviewer codex-config > .codex/config.toml
 
 # Export for Google Gemini / ADK
 multiagent export code/code-reviewer gemini -o ./adk-agents
@@ -142,16 +149,29 @@ multiagent export code/code-reviewer chatgpt
 multiagent export code/code-reviewer raw
 
 # Bulk export all agents in a category
-multiagent export-all claude-code -o .agents/skills -c code
+multiagent export-all claude-code -o .claude/agents -c code
 ```
 
 | Target | Format | Works With |
 |--------|--------|------------|
-| `claude-code` | `.md` skill files | Claude Code, Claude Desktop |
+| `claude-code` | `.md` subagent files | Claude Code `.claude/agents/` |
+| `agentskill` | `SKILL.md`-style Markdown | AgentSkills-compatible tools |
+| `a2a-agent-card` | Agent Card JSON | A2A discovery via `.well-known/agent-card.json` |
 | `codex` | AGENTS.md sections | OpenAI Codex, OpenClaw |
+| `codex-config` | `.codex/config.toml` snippet | OpenAI Codex multi-agent roles |
 | `gemini` | ADK YAML config | Google Gemini, Vertex AI |
 | `chatgpt` | System instructions | ChatGPT, Custom GPTs |
 | `raw` | Plain system prompt | **Any LLM** — Ollama, LM Studio, llama.cpp, vLLM, etc. |
+
+### Route before exporting
+
+```bash
+# Dry-run agent selection and include export commands for the chosen target
+multiagent route "review this PR and write missing tests" --target a2a-agent-card
+
+# Machine-readable route decision with target export plan
+multiagent route "review this PR and write missing tests" --target codex-config --json
+```
 
 ## Agent Catalog
 
@@ -196,6 +216,25 @@ works_with:
 recommended_patterns:
   - supervisor-worker      # Reviewer supervises specialist agents
   - sequential             # Review → Test → Refactor pipeline
+
+# Optional schema v2 metadata for routing, safety, observability, and protocols
+orchestration:
+  control_mode: router
+  execution_mode: dry_run
+safety:
+  side_effect_risk: low
+  requires_human_review: true
+observability:
+  trace_tags: [code-review]
+  eval_criteria: [finds-bugs, suggests-fixes]
+outputs:
+  expected_artifacts: [review-comments]
+context:
+  loading: trigger
+  max_context_tokens: 4096
+protocols:
+  a2a:
+    expose: true
 ```
 
 ### Full Catalog
@@ -268,16 +307,35 @@ Eight battle-tested orchestration patterns, each with runnable examples:
 
 ## Frameworks
 
-`multi-agent` provides first-class adapters for the top frameworks:
+`multi-agent` provides adapter modules for the main Python agent frameworks:
 
-| Framework | Adapter | Status | Stars |
-|-----------|---------|:------:|------:|
-| [CrewAI](docs/frameworks/crewai.md) | `multiagent.adapters.crewai` | Stable | 44K |
-| [LangGraph](docs/frameworks/langgraph.md) | `multiagent.adapters.langgraph` | Stable | 25K |
-| [OpenAI Agents SDK](docs/frameworks/openai-sdk.md) | `multiagent.adapters.openai_sdk` | Stable | 21K |
-| [Claude Agent SDK](docs/frameworks/claude-sdk.md) | `multiagent.adapters.claude_sdk` | Stable | — |
-| [Google ADK](docs/frameworks/google-adk.md) | `multiagent.adapters.google_adk` | Beta | 18K |
-| [smolagents](docs/frameworks/smolagents.md) | `multiagent.adapters.smolagents` | Beta | 26K |
+| Framework | Adapter | Current scope |
+|-----------|---------|---------------|
+| [CrewAI](docs/frameworks/crewai.md) | `multiagent.adapters.crewai` | Agent/Crew conversion; Flow template config |
+| [LangGraph](docs/frameworks/langgraph.md) | `multiagent.adapters.langgraph` | Node/flow config conversion |
+| [OpenAI Agents SDK](docs/frameworks/openai-sdk.md) | `multiagent.adapters.openai_sdk` | Agent conversion; handoff and agent-as-tool plans |
+| [Claude Agent SDK](docs/frameworks/claude-sdk.md) | `multiagent.adapters.claude_sdk` | Message/subagent config conversion |
+| [Google ADK](docs/frameworks/google-adk.md) | `multiagent.adapters.google_adk` | ADK config conversion; sequential/parallel workflow plans |
+| [smolagents](docs/frameworks/smolagents.md) | `multiagent.adapters.smolagents` | Agent config conversion; manager/managed-agent plans |
+
+Adapter template helpers return plain dictionaries, so they can be inspected,
+tested, or translated into framework code before any framework package is
+installed:
+
+```python
+from multiagent import Catalog
+from multiagent.adapters import crewai, google_adk, openai_sdk, smolagents
+
+catalog = Catalog()
+reviewer = catalog.load("code/code-reviewer")
+test_writer = catalog.load("code/test-writer")
+
+handoff_plan = openai_sdk.to_handoff_config(reviewer, [test_writer])
+tool_plan = openai_sdk.to_agent_tool_config(reviewer, [test_writer])
+adk_parallel = google_adk.to_workflow_config([reviewer, test_writer], workflow="parallel")
+flow = crewai.to_flow_config([reviewer, test_writer], flow_name="CodeReviewFlow", human_feedback=True)
+manager = smolagents.to_manager_config(reviewer, [test_writer])
+```
 
 Don't see your framework? [Submit an adapter](CONTRIBUTING.md#adding-an-adapter).
 
@@ -303,7 +361,7 @@ multiagent enhance code/code-reviewer
 multiagent enhance code/code-reviewer -p all
 
 # Enhance + export to Claude Code
-multiagent enhance code/code-reviewer -p all -t claude-code -o .agents/skills
+multiagent enhance code/code-reviewer -p all -t claude-code -o .claude/agents
 ```
 
 | Enhancement | Effect | Source |
@@ -379,6 +437,7 @@ print(estimate)
 | Example | Pattern | Frameworks | Description |
 |---------|---------|------------|-------------|
 | [Hello Agents](examples/quickstart/hello_agents.py) | Single | All | Your first agent in 10 lines |
+| [Adapter Template Plans](examples/quickstart/demo_adapter_templates.py) | Router/Export prep | OpenAI, ADK, CrewAI, smolagents | Framework plans without optional runtime imports |
 | [Code Review Team](examples/real_world/code_review_team.py) | Supervisor/Worker | CrewAI, Claude | Automated PR review pipeline |
 | [Research Pipeline](examples/real_world/research_pipeline.py) | Parallel + Sequential | LangGraph | Multi-source research with fact-checking |
 | [Content Factory](examples/real_world/content_factory.py) | Sequential | CrewAI | Writer → Editor → SEO → Publisher |
@@ -389,7 +448,7 @@ print(estimate)
 ```mermaid
 graph TB
     subgraph "multi-agent"
-        CAT[Agent Catalog<br/>50+ YAML definitions]
+        CAT[Agent Catalog<br/>48 YAML definitions]
         PAT[Pattern Library<br/>8 orchestration patterns]
         REC[Recommendation Engine<br/>Task → Agent matching]
         COST[Cost Estimator<br/>Per-model pricing]
@@ -420,7 +479,7 @@ graph TB
 ## Roadmap
 
 - [x] Core catalog format (YAML agent definitions)
-- [x] 50+ agent definitions across 6 categories
+- [x] 48 agent definitions across 11 categories
 - [x] 8 orchestration patterns with docs
 - [x] CrewAI, LangGraph, OpenAI adapters
 - [x] Claude SDK, Google ADK adapters

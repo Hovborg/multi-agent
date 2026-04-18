@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 CATALOG_DIR = Path(__file__).resolve().parent.parent.parent / "catalog"
 
@@ -36,6 +39,12 @@ class AgentDefinition:
     cost_profile: CostProfile
     works_with: list[str]
     recommended_patterns: list[dict[str, str]]
+    orchestration: dict[str, Any] = field(default_factory=dict)
+    safety: dict[str, Any] = field(default_factory=dict)
+    observability: dict[str, Any] = field(default_factory=dict)
+    outputs: dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
+    protocols: dict[str, Any] = field(default_factory=dict)
     _raw: dict[str, Any] = field(default=None, repr=False)
 
     @classmethod
@@ -61,6 +70,12 @@ class AgentDefinition:
             cost_profile=cost_profile,
             works_with=data.get("works_with", []),
             recommended_patterns=data.get("recommended_patterns", []),
+            orchestration=data.get("orchestration", {}),
+            safety=data.get("safety", {}),
+            observability=data.get("observability", {}),
+            outputs=data.get("outputs", {}),
+            context=data.get("context", {}),
+            protocols=data.get("protocols", {}),
             _raw=data,
         )
 
@@ -87,7 +102,8 @@ class Catalog:
             try:
                 agent = AgentDefinition.from_yaml(yaml_file)
                 self._agents[agent.full_name] = agent
-            except (yaml.YAMLError, KeyError):
+            except (yaml.YAMLError, KeyError) as err:
+                logger.warning("Skipping agent catalog file %s: %s", yaml_file, err)
                 continue
         self._loaded = True
 

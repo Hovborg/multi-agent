@@ -71,6 +71,64 @@ class TestCatalog:
         assert agent.cost_profile.output_tokens_per_run > 0
         assert len(agent.cost_profile.recommended_models) > 0
 
+    def test_existing_agents_default_schema_v2_metadata(self):
+        catalog = Catalog(CATALOG_DIR)
+        agent = catalog.load("code/code-reviewer")
+
+        assert agent.orchestration == {}
+        assert agent.safety == {}
+        assert agent.observability == {}
+        assert agent.outputs == {}
+        assert agent.context == {}
+        assert agent.protocols == {}
+
+    def test_loads_schema_v2_metadata(self, tmp_path):
+        agent_dir = tmp_path / "code"
+        agent_dir.mkdir()
+        (agent_dir / "schema-v2-agent.yaml").write_text(
+            """
+name: schema-v2-agent
+version: "2.0"
+description: Test agent with schema v2 metadata
+category: code
+tags: [test]
+system_prompt: |
+  You are a test agent.
+tools: []
+parameters: {}
+cost_profile: {}
+works_with: []
+recommended_patterns: []
+orchestration:
+  control_mode: router
+  execution_mode: dry_run
+safety:
+  side_effect_risk: low
+  requires_human_review: true
+observability:
+  trace_tags: [catalog-test]
+  eval_criteria: [returns-valid-json]
+outputs:
+  expected_artifacts: [agent-card]
+context:
+  loading: trigger
+  max_context_tokens: 4096
+protocols:
+  a2a:
+    expose: true
+""",
+            encoding="utf-8",
+        )
+
+        agent = Catalog(tmp_path).load("code/schema-v2-agent")
+
+        assert agent.orchestration["control_mode"] == "router"
+        assert agent.safety["requires_human_review"] is True
+        assert agent.observability["trace_tags"] == ["catalog-test"]
+        assert agent.outputs["expected_artifacts"] == ["agent-card"]
+        assert agent.context["loading"] == "trigger"
+        assert agent.protocols["a2a"]["expose"] is True
+
 
 class TestCostEstimator:
     def test_estimate_agent(self):

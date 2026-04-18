@@ -37,6 +37,63 @@ def to_agent(definition: AgentDefinition, **overrides: Any) -> Agent:
     return Agent(**kwargs)
 
 
+def to_handoff_config(
+    manager: AgentDefinition,
+    handoffs: list[AgentDefinition],
+) -> dict[str, Any]:
+    """Build a framework-free OpenAI Agents SDK handoff plan.
+
+    Handoffs transfer control to another agent. Use this when specialist agents
+    should own follow-up turns rather than returning a single tool result.
+    """
+    return {
+        "pattern": "handoff",
+        "manager": _agent_template(manager),
+        "handoffs": [_agent_template(agent) for agent in handoffs],
+        "notes": [
+            "Create OpenAI Agent objects from these fields.",
+            "Pass the handoff agents through the manager Agent handoffs argument.",
+        ],
+    }
+
+
+def to_agent_tool_config(
+    manager: AgentDefinition,
+    tools: list[AgentDefinition],
+) -> dict[str, Any]:
+    """Build a framework-free OpenAI Agents SDK agent-as-tool plan.
+
+    Agent-as-tool keeps the manager in control and calls specialists for
+    bounded work, which matches review, search, and write-assist workflows.
+    """
+    return {
+        "pattern": "agent-as-tool",
+        "manager": _agent_template(manager),
+        "tools": [
+            {
+                **_agent_template(agent),
+                "agent": agent.full_name,
+                "tool_name": agent.name.replace("-", "_"),
+            }
+            for agent in tools
+        ],
+        "notes": [
+            "Create each specialist as an OpenAI Agent.",
+            "Expose specialists to the manager with the Agents SDK as_tool helper.",
+        ],
+    }
+
+
+def _agent_template(definition: AgentDefinition) -> dict[str, Any]:
+    return {
+        "catalog_name": definition.full_name,
+        "name": definition.name.replace("-", " ").title(),
+        "description": definition.description,
+        "instructions": definition.system_prompt,
+        "model": definition.cost_profile.recommended_models.get("balanced", ""),
+    }
+
+
 def from_catalog(
     agent_name: str | list[str],
     catalog: Catalog | None = None,

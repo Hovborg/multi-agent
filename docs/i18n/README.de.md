@@ -37,11 +37,9 @@
 
 ---
 
-**Ueber 50 praxiserprobte Agenten-Definitionen. 11 Kategorien. 8 Orchestrierungsmuster. 6 Framework-Adapter. 5 Export-Ziele. Kein Vendor Lock-in.**
+**48 Agenten-Definitionen. 11 Kategorien. 8 Orchestrierungsmuster. 6 Framework-Adapter. 8 Export-Ziele. Kein Vendor Lock-in.**
 
 `multi-agent` ist ein framework-unabhaengiger Katalog produktionsreifer KI-Agenten-Muster. Definiere deine Agenten einmal in YAML und fuehre sie auf CrewAI, LangGraph, OpenAI Agents SDK, Claude SDK, Google ADK oder smolagents aus.
-
-> *"57% der Agenten-Ausfaelle in Unternehmen sind Orchestrierungs-Fehler, keine Modell-Fehler."* — Anthropic, 2026
 
 Hoer auf, Agenten neu zu erfinden. Fang an, sie zu komponieren.
 
@@ -51,13 +49,12 @@ Hoer auf, Agenten neu zu erfinden. Fang an, sie zu komponieren.
 |---|:---:|:---:|:---:|:---:|:---:|
 | Framework-unabhaengige Definitionen | **Ja** | Nein | Nein | Nein | Nein |
 | Export auf jede KI-Plattform | **Ja** | Nein | Nein | Nein | Nein |
-| Agenten-Katalog mit 50+ Rollen | **Ja** | ~10 | ~5 | ~3 | ~5 |
+| Wiederverwendbarer Agenten-Katalog | **Ja** | Framework-spezifisch | Framework-spezifisch | Framework-spezifisch | Framework-spezifisch |
 | Muster-Bibliothek (8 Muster) | **Ja** | 2 | 3 | 2 | 2 |
 | Integrierte Kostenschaetzung | **Ja** | Nein | Nein | Nein | Nein |
 | Agenten-Empfehlungsengine | **Ja** | Nein | Nein | Nein | Nein |
 | Kompatibel mit jedem LLM | **Ja** | Ja | Ja | Nur OpenAI | Nur Claude |
 | MCP nativ | **Ja** | Teilweise | Adapter | Ja | Ja |
-| Zeilen Kerncode | **~600** | 18K | 25K | 8K | 12K |
 
 ## Schnellstart
 
@@ -161,8 +158,12 @@ multiagent enhance code/code-reviewer -p all
 ## Export auf jede Plattform
 
 ```bash
-multiagent export code/code-reviewer claude-code -o .agents/skills
+multiagent export code/code-reviewer claude-code -o .claude/agents
+multiagent export code/code-reviewer agentskill -o .agents/skills/code-reviewer
+multiagent export code/code-reviewer a2a-agent-card -o ./agent-cards
 multiagent export code/code-reviewer codex
+mkdir -p .codex
+multiagent export code/code-reviewer codex-config > .codex/config.toml
 multiagent export code/code-reviewer gemini -o ./adk-agents
 multiagent export code/code-reviewer chatgpt
 multiagent export code/code-reviewer raw
@@ -170,8 +171,11 @@ multiagent export code/code-reviewer raw
 
 | Ziel | Format | Kompatibel mit |
 |------|--------|----------------|
-| `claude-code` | `.md`-Skill-Dateien | Claude Code, Claude Desktop |
+| `claude-code` | `.md`-Subagent-Dateien | Claude Code `.claude/agents/` |
+| `agentskill` | `SKILL.md`-style Markdown | AgentSkills-kompatible Tools |
+| `a2a-agent-card` | Agent Card JSON | A2A Discovery via `.well-known/agent-card.json` |
 | `codex` | AGENTS.md-Abschnitte | OpenAI Codex, OpenClaw |
+| `codex-config` | `.codex/config.toml`-Snippet | OpenAI Codex Multi-Agent-Rollen |
 | `gemini` | ADK-YAML-Konfiguration | Google Gemini, Vertex AI |
 | `chatgpt` | Systemanweisungen | ChatGPT, Custom GPTs |
 | `raw` | Einfacher System-Prompt | **Jedes LLM** — Ollama, LM Studio, llama.cpp, vLLM, etc. |

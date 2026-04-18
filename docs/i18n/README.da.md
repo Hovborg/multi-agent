@@ -37,11 +37,9 @@
 
 ---
 
-**50+ kamptestede agent-definitioner. 11 kategorier. 8 orkestreringmoenstre. 6 framework-adaptere. 5 eksportmaal. Ingen vendor lock-in.**
+**48 agent-definitioner. 11 kategorier. 8 orkestreringmoenstre. 6 framework-adaptere. 8 eksportmaal. Ingen vendor lock-in.**
 
 `multi-agent` er et framework-uafhaengigt katalog af produktionsklare AI-agent-moenstre. Definer dine agenter en gang i YAML, og koer dem paa CrewAI, LangGraph, OpenAI Agents SDK, Claude SDK, Google ADK eller smolagents.
-
-> *"57% af virksomheders agent-fejl er orkestreringsfejl, ikke model-fejl."* — Anthropic, 2026
 
 Stop med at genopfinde agenter. Begynd at sammensaette dem.
 
@@ -51,13 +49,12 @@ Stop med at genopfinde agenter. Begynd at sammensaette dem.
 |---|:---:|:---:|:---:|:---:|:---:|
 | Framework-uafhaengige definitioner | **Ja** | Nej | Nej | Nej | Nej |
 | Eksporter til enhver AI-platform | **Ja** | Nej | Nej | Nej | Nej |
-| Agent-katalog med 50+ roller | **Ja** | ~10 | ~5 | ~3 | ~5 |
+| Genbrugeligt agent-katalog | **Ja** | Framework-specifikt | Framework-specifikt | Framework-specifikt | Framework-specifikt |
 | Moensterbibliotek (8 moenstre) | **Ja** | 2 | 3 | 2 | 2 |
 | Indbygget prisestimat | **Ja** | Nej | Nej | Nej | Nej |
 | Agent-anbefalingsmotor | **Ja** | Nej | Nej | Nej | Nej |
 | Virker med enhver LLM | **Ja** | Ja | Ja | Kun OpenAI | Kun Claude |
 | MCP nativt | **Ja** | Delvist | Adapter | Ja | Ja |
-| Linjer kernekode | **~600** | 18K | 25K | 8K | 12K |
 
 ## Hurtig Start
 
@@ -161,8 +158,12 @@ multiagent enhance code/code-reviewer -p all
 ## Eksporter til Enhver Platform
 
 ```bash
-multiagent export code/code-reviewer claude-code -o .agents/skills
+multiagent export code/code-reviewer claude-code -o .claude/agents
+multiagent export code/code-reviewer agentskill -o .agents/skills/code-reviewer
+multiagent export code/code-reviewer a2a-agent-card -o ./agent-cards
 multiagent export code/code-reviewer codex
+mkdir -p .codex
+multiagent export code/code-reviewer codex-config > .codex/config.toml
 multiagent export code/code-reviewer gemini -o ./adk-agents
 multiagent export code/code-reviewer chatgpt
 multiagent export code/code-reviewer raw
@@ -170,8 +171,11 @@ multiagent export code/code-reviewer raw
 
 | Maal | Format | Kompatibelt med |
 |------|--------|-----------------|
-| `claude-code` | `.md`-skill-filer | Claude Code, Claude Desktop |
+| `claude-code` | `.md`-subagent-filer | Claude Code `.claude/agents/` |
+| `agentskill` | `SKILL.md`-style Markdown | AgentSkills-kompatible vaerktoejer |
+| `a2a-agent-card` | Agent Card JSON | A2A discovery via `.well-known/agent-card.json` |
 | `codex` | AGENTS.md-sektioner | OpenAI Codex, OpenClaw |
+| `codex-config` | `.codex/config.toml`-snippet | OpenAI Codex multi-agent-roller |
 | `gemini` | ADK YAML-konfiguration | Google Gemini, Vertex AI |
 | `chatgpt` | Systeminstruktioner | ChatGPT, Custom GPTs |
 | `raw` | Ren system-prompt | **Enhver LLM** — Ollama, LM Studio, llama.cpp, vLLM, osv. |

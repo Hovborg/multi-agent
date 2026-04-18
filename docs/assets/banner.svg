@@ -76,7 +76,7 @@
   <text x="400" y="120" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#a5a5c0" text-anchor="middle" letter-spacing="0.5">The definitive catalog of AI agent patterns</text>
 
   <!-- Stats -->
-  <text x="270" y="158" font-family="ui-monospace, monospace" font-size="12" fill="#6366f1" text-anchor="middle">50+ Agents</text>
+  <text x="270" y="158" font-family="ui-monospace, monospace" font-size="12" fill="#6366f1" text-anchor="middle">48 Agents</text>
   <text x="400" y="158" font-family="ui-monospace, monospace" font-size="12" fill="#8b5cf6" text-anchor="middle">8 Patterns</text>
   <text x="530" y="158" font-family="ui-monospace, monospace" font-size="12" fill="#a78bfa" text-anchor="middle">6 Adapters</text>
 

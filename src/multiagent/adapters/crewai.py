@@ -51,6 +51,66 @@ def to_task(
     return Task(**kwargs)
 
 
+def to_flow_config(
+    definitions: list[AgentDefinition],
+    flow_name: str = "CatalogFlow",
+    human_feedback: bool = False,
+) -> dict[str, Any]:
+    """Create a framework-free CrewAI Flow template from catalog agents."""
+    uses = ["Flow", "start", "listen", "router"]
+    if human_feedback:
+        uses.append("human_feedback")
+
+    steps = []
+    previous_step: str | None = None
+    for index, definition in enumerate(definitions):
+        method = _flow_step_name(definition)
+        decorator = "@start()" if index == 0 else f"@listen({previous_step})"
+        steps.append(
+            {
+                "agent": definition.full_name,
+                "method": method,
+                "decorator": decorator,
+                "task": definition.description,
+            }
+        )
+        previous_step = method
+
+    return {
+        "flow_name": flow_name,
+        "uses": uses,
+        "agents": [
+            {
+                "catalog_name": definition.full_name,
+                "role": definition.name.replace("-", " ").title(),
+                "goal": definition.description,
+            }
+            for definition in definitions
+        ],
+        "steps": steps,
+        "router": {
+            "decorator": "@router()",
+            "default_route": steps[-1]["method"] if steps else "",
+        },
+        "human_feedback": {
+            "enabled": human_feedback,
+            "default_outcome": "needs_revision" if human_feedback else "",
+        },
+    }
+
+
+def _flow_step_name(definition: AgentDefinition) -> str:
+    endings = {
+        "reviewer": "review",
+        "writer": "write",
+        "auditor": "audit",
+        "researcher": "research",
+        "planner": "plan",
+    }
+    last_word = definition.name.rsplit("-", 1)[-1]
+    return endings.get(last_word, definition.name.replace("-", "_"))
+
+
 def from_catalog(
     agent_names: list[str],
     task_description: str = "",

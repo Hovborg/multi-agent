@@ -4,8 +4,6 @@
 
 MCP is the open standard for connecting AI agents to tools and data sources. Think of it as "USB for AI" — a universal interface that lets any agent talk to any tool.
 
-**Status (April 2026):** 97 million monthly SDK downloads. Governed by the Agentic AI Foundation under the Linux Foundation.
-
 ## How MCP Works
 
 ```
@@ -53,14 +51,14 @@ tools:
 
 ## Popular MCP Servers
 
-| Server | Purpose | Stars |
-|--------|---------|------:|
-| filesystem | Read/write local files | Built-in |
-| postgres | Query PostgreSQL databases | 5K+ |
-| github | GitHub API operations | 4K+ |
-| slack | Slack messaging | 3K+ |
-| browser | Web browsing and scraping | 3K+ |
-| memory | Persistent memory storage | 2K+ |
+| Server | Purpose |
+|--------|---------|
+| filesystem | Read/write local files |
+| postgres | Query PostgreSQL databases |
+| github | GitHub API operations |
+| slack | Slack messaging |
+| browser | Web browsing and scraping |
+| memory | Persistent memory storage |
 
 ## Resources
 

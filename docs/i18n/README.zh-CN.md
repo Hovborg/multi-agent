@@ -37,11 +37,9 @@
 
 ---
 
-**50+ 经过实战检验的智能体定义。11 个类别。8 种编排模式。6 个框架适配器。5 个导出目标。零锁定。**
+**48 个智能体定义。11 个类别。8 种编排模式。6 个框架适配器。6 个导出目标。零锁定。**
 
 `multi-agent` 是一个框架无关的生产级 AI 智能体模式目录。用 YAML 定义一次智能体，即可在 CrewAI、LangGraph、OpenAI Agents SDK、Claude SDK、Google ADK 或 smolagents 上运行。
-
-> *"57% 的企业智能体故障是编排故障，而非模型故障。"* — Anthropic, 2026
 
 不要重复造轮子。开始组合智能体吧。
 
@@ -51,13 +49,12 @@
 |---|:---:|:---:|:---:|:---:|:---:|
 | 框架无关定义 | **是** | 否 | 否 | 否 | 否 |
 | 导出至任意 AI 平台 | **是** | 否 | 否 | 否 | 否 |
-| 50+ 角色智能体目录 | **是** | ~10 | ~5 | ~3 | ~5 |
+| 可复用智能体目录 | **是** | 框架特定 | 框架特定 | 框架特定 | 框架特定 |
 | 模式库（8 种模式） | **是** | 2 | 3 | 2 | 2 |
 | 内置成本估算 | **是** | 否 | 否 | 否 | 否 |
 | 智能体推荐引擎 | **是** | 否 | 否 | 否 | 否 |
 | 支持任意 LLM | **是** | 是 | 是 | 仅 OpenAI | 仅 Claude |
 | 原生 MCP 支持 | **是** | 部分 | 适配器 | 是 | 是 |
-| 核心代码行数 | **~600** | 18K | 25K | 8K | 12K |
 
 ## 快速开始
 
@@ -161,8 +158,12 @@ multiagent enhance code/code-reviewer -p all
 ## 导出到任意平台
 
 ```bash
-multiagent export code/code-reviewer claude-code -o .agents/skills
+multiagent export code/code-reviewer claude-code -o .claude/agents
+multiagent export code/code-reviewer agentskill -o .agents/skills/code-reviewer
+multiagent export code/code-reviewer a2a-agent-card -o ./agent-cards
 multiagent export code/code-reviewer codex
+mkdir -p .codex
+multiagent export code/code-reviewer codex-config > .codex/config.toml
 multiagent export code/code-reviewer gemini -o ./adk-agents
 multiagent export code/code-reviewer chatgpt
 multiagent export code/code-reviewer raw
@@ -170,8 +171,11 @@ multiagent export code/code-reviewer raw
 
 | 目标 | 格式 | 适用于 |
 |------|------|--------|
-| `claude-code` | `.md` 技能文件 | Claude Code, Claude Desktop |
+| `claude-code` | `.md` subagent 文件 | Claude Code `.claude/agents/` |
+| `agentskill` | `SKILL.md` 风格 Markdown | AgentSkills 兼容工具 |
+| `a2a-agent-card` | Agent Card JSON | 通过 `.well-known/agent-card.json` 进行 A2A discovery |
 | `codex` | AGENTS.md 章节 | OpenAI Codex, OpenClaw |
+| `codex-config` | `.codex/config.toml` 片段 | OpenAI Codex multi-agent 角色 |
 | `gemini` | ADK YAML 配置 | Google Gemini, Vertex AI |
 | `chatgpt` | 系统指令 | ChatGPT, Custom GPTs |
 | `raw` | 纯系统提示 | **任意 LLM** — Ollama, LM Studio, llama.cpp, vLLM 等 |

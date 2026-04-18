@@ -37,11 +37,9 @@
 
 ---
 
-**Mas de 50 definiciones de agentes probadas en produccion. 11 categorias. 8 patrones de orquestacion. 6 adaptadores de frameworks. 5 destinos de exportacion. Sin dependencia de proveedor.**
+**48 definiciones de agentes. 11 categorias. 8 patrones de orquestacion. 6 adaptadores de frameworks. 8 destinos de exportacion. Sin dependencia de proveedor.**
 
 `multi-agent` es un catalogo de patrones de agentes IA listos para produccion, independiente del framework. Define tus agentes una vez en YAML y ejecutalos en CrewAI, LangGraph, OpenAI Agents SDK, Claude SDK, Google ADK o smolagents.
-
-> *"El 57% de los fallos de agentes empresariales son fallos de orquestacion, no fallos del modelo."* — Anthropic, 2026
 
 Deja de reinventar agentes. Empieza a componerlos.
 
@@ -51,13 +49,12 @@ Deja de reinventar agentes. Empieza a componerlos.
 |---|:---:|:---:|:---:|:---:|:---:|
 | Definiciones independientes del framework | **Si** | No | No | No | No |
 | Exportar a cualquier plataforma IA | **Si** | No | No | No | No |
-| Catalogo con mas de 50 roles | **Si** | ~10 | ~5 | ~3 | ~5 |
+| Catalogo reutilizable de agentes | **Si** | Especifico del framework | Especifico del framework | Especifico del framework | Especifico del framework |
 | Biblioteca de patrones (8 patrones) | **Si** | 2 | 3 | 2 | 2 |
 | Estimacion de costos integrada | **Si** | No | No | No | No |
 | Motor de recomendacion de agentes | **Si** | No | No | No | No |
 | Compatible con cualquier LLM | **Si** | Si | Si | Solo OpenAI | Solo Claude |
 | MCP nativo | **Si** | Parcial | Adaptador | Si | Si |
-| Lineas de codigo principal | **~600** | 18K | 25K | 8K | 12K |
 
 ## Inicio Rapido
 
@@ -161,8 +158,12 @@ multiagent enhance code/code-reviewer -p all
 ## Exportar a Cualquier Plataforma
 
 ```bash
-multiagent export code/code-reviewer claude-code -o .agents/skills
+multiagent export code/code-reviewer claude-code -o .claude/agents
+multiagent export code/code-reviewer agentskill -o .agents/skills/code-reviewer
+multiagent export code/code-reviewer a2a-agent-card -o ./agent-cards
 multiagent export code/code-reviewer codex
+mkdir -p .codex
+multiagent export code/code-reviewer codex-config > .codex/config.toml
 multiagent export code/code-reviewer gemini -o ./adk-agents
 multiagent export code/code-reviewer chatgpt
 multiagent export code/code-reviewer raw
@@ -170,8 +171,11 @@ multiagent export code/code-reviewer raw
 
 | Destino | Formato | Compatible con |
 |---------|---------|----------------|
-| `claude-code` | Archivos de skill `.md` | Claude Code, Claude Desktop |
+| `claude-code` | Archivos subagent `.md` | Claude Code `.claude/agents/` |
+| `agentskill` | Markdown estilo `SKILL.md` | Herramientas compatibles con AgentSkills |
+| `a2a-agent-card` | Agent Card JSON | Descubrimiento A2A via `.well-known/agent-card.json` |
 | `codex` | Secciones AGENTS.md | OpenAI Codex, OpenClaw |
+| `codex-config` | Fragmento `.codex/config.toml` | Roles multi-agent de OpenAI Codex |
 | `gemini` | Configuracion ADK YAML | Google Gemini, Vertex AI |
 | `chatgpt` | Instrucciones del sistema | ChatGPT, Custom GPTs |
 | `raw` | Prompt del sistema plano | **Cualquier LLM** — Ollama, LM Studio, llama.cpp, vLLM, etc. |

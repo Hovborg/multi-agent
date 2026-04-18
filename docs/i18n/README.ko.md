@@ -37,11 +37,9 @@
 
 ---
 
-**50개 이상의 실전 검증된 에이전트 정의. 11개 카테고리. 8가지 오케스트레이션 패턴. 6개 프레임워크 어댑터. 5개 내보내기 대상. 벤더 종속 없음.**
+**48개 에이전트 정의. 11개 카테고리. 8가지 오케스트레이션 패턴. 6개 프레임워크 어댑터. 6개 내보내기 대상. 벤더 종속 없음.**
 
 `multi-agent`는 프레임워크에 구애받지 않는 프로덕션 레디 AI 에이전트 패턴 카탈로그입니다. YAML로 에이전트를 한 번 정의하면 CrewAI, LangGraph, OpenAI Agents SDK, Claude SDK, Google ADK, smolagents 어디서든 실행할 수 있습니다.
-
-> *"기업 에이전트 장애의 57%는 모델 장애가 아닌 오케스트레이션 장애입니다."* — Anthropic, 2026
 
 에이전트를 다시 만들지 마세요. 조합하세요.
 
@@ -51,13 +49,12 @@
 |---|:---:|:---:|:---:|:---:|:---:|
 | 프레임워크 비종속 정의 | **지원** | 미지원 | 미지원 | 미지원 | 미지원 |
 | 모든 AI 플랫폼으로 내보내기 | **지원** | 미지원 | 미지원 | 미지원 | 미지원 |
-| 50개 이상 역할의 에이전트 카탈로그 | **지원** | ~10 | ~5 | ~3 | ~5 |
+| 재사용 가능한 에이전트 카탈로그 | **지원** | 프레임워크 전용 | 프레임워크 전용 | 프레임워크 전용 | 프레임워크 전용 |
 | 패턴 라이브러리 (8개 패턴) | **지원** | 2 | 3 | 2 | 2 |
 | 내장 비용 추정 | **지원** | 미지원 | 미지원 | 미지원 | 미지원 |
 | 에이전트 추천 엔진 | **지원** | 미지원 | 미지원 | 미지원 | 미지원 |
 | 모든 LLM 지원 | **지원** | 지원 | 지원 | OpenAI 전용 | Claude 전용 |
 | MCP 네이티브 | **지원** | 부분적 | 어댑터 | 지원 | 지원 |
-| 코어 코드 라인 수 | **~600** | 18K | 25K | 8K | 12K |
 
 ## 빠른 시작
 
@@ -161,8 +158,12 @@ multiagent enhance code/code-reviewer -p all
 ## 모든 플랫폼으로 내보내기
 
 ```bash
-multiagent export code/code-reviewer claude-code -o .agents/skills
+multiagent export code/code-reviewer claude-code -o .claude/agents
+multiagent export code/code-reviewer agentskill -o .agents/skills/code-reviewer
+multiagent export code/code-reviewer a2a-agent-card -o ./agent-cards
 multiagent export code/code-reviewer codex
+mkdir -p .codex
+multiagent export code/code-reviewer codex-config > .codex/config.toml
 multiagent export code/code-reviewer gemini -o ./adk-agents
 multiagent export code/code-reviewer chatgpt
 multiagent export code/code-reviewer raw
@@ -170,8 +171,11 @@ multiagent export code/code-reviewer raw
 
 | 대상 | 형식 | 호환 서비스 |
 |------|------|------------|
-| `claude-code` | `.md` 스킬 파일 | Claude Code, Claude Desktop |
+| `claude-code` | `.md` subagent 파일 | Claude Code `.claude/agents/` |
+| `agentskill` | `SKILL.md` 스타일 Markdown | AgentSkills 호환 도구 |
+| `a2a-agent-card` | Agent Card JSON | `.well-known/agent-card.json` 기반 A2A discovery |
 | `codex` | AGENTS.md 섹션 | OpenAI Codex, OpenClaw |
+| `codex-config` | `.codex/config.toml` 스니펫 | OpenAI Codex multi-agent 역할 |
 | `gemini` | ADK YAML 설정 | Google Gemini, Vertex AI |
 | `chatgpt` | 시스템 인스트럭션 | ChatGPT, Custom GPTs |
 | `raw` | 플레인 시스템 프롬프트 | **모든 LLM** — Ollama, LM Studio, llama.cpp, vLLM 등 |

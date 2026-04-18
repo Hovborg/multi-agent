@@ -1416,8 +1416,11 @@ body {
           <label>Export Format</label>
           <select class="form-select" id="pg-export-format">
             <option value="raw">Raw text</option>
-            <option value="claude-code">Claude Code (CLAUDE.md)</option>
+            <option value="a2a-agent-card">A2A Agent Card JSON</option>
+            <option value="claude-code">Claude Code (.claude/agents)</option>
+            <option value="agentskill">AgentSkills (SKILL.md)</option>
             <option value="codex">Codex (AGENTS.md)</option>
+            <option value="codex-config">Codex config (.codex/config.toml)</option>
             <option value="gemini">Gemini (system instruction)</option>
             <option value="chatgpt">ChatGPT (system message)</option>
           </select>
@@ -1914,16 +1917,83 @@ function buildEnhancedPrompt(agent, enhKeys) {
   return parts;
 }
 
+function titleCase(value) {
+  return value.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function tomlString(value) {
+  return `"${String(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\x08/g, '\\b')
+    .replace(/\t/g, '\\t')
+    .replace(/\n/g, '\\n')
+    .replace(/\f/g, '\\f')
+    .replace(/\r/g, '\\r')}"`;
+}
+
 function exportPrompt(agent, parts, format) {
   const fullText = parts.map(p => p.text).join('\n\n');
 
   switch (format) {
     case 'raw':
       return fullText;
+    case 'a2a-agent-card': {
+      const modes = ['text/plain', 'application/json'];
+      const exampleTags = (agent.tags && agent.tags.length ? agent.tags : [agent.category])
+        .slice(0, 3)
+        .join(', ');
+      return JSON.stringify({
+        name: titleCase(agent.name),
+        description: agent.description,
+        version: agent.version,
+        supportedInterfaces: [
+          {
+            url: `http://localhost:8000/a2a/${agent.name}`,
+            protocolBinding: 'JSONRPC',
+            protocolVersion: '1.0',
+          },
+        ],
+        capabilities: {
+          streaming: false,
+          pushNotifications: false,
+          extendedAgentCard: false,
+        },
+        defaultInputModes: modes,
+        defaultOutputModes: modes,
+        skills: [
+          {
+            id: agent.name,
+            name: titleCase(agent.name),
+            description: agent.description,
+            tags: agent.tags || [],
+            examples: [`Use ${agent.name} for ${exampleTags} tasks.`],
+            inputModes: modes,
+            outputModes: modes,
+          },
+        ],
+      }, null, 2);
+    }
     case 'claude-code':
-      return `# CLAUDE.md - ${agent.name}\n\n## Role\n${agent.description}\n\n## System Prompt\n${fullText}\n\n## Tools\n${agent.tools.map(t => `- ${t.name || t.server}: ${t.description || t.type}`).join('\n')}\n`;
+      return `---\nname: ${agent.name}\ndescription: >\n  ${agent.description}\n  Use when tasks involve: ${(agent.tags || []).join(', ') || agent.category}.\n---\n\n# ${titleCase(agent.name)}\n\n${fullText}\n\n## Catalog Tool Hints\n${agent.tools.map(t => `- ${t.name || t.server}`).join('\n')}\n`;
+    case 'agentskill':
+      return `---\nname: ${agent.name}\ndescription: >\n  ${agent.description}\n\n  TRIGGER THIS SKILL WHEN:\n  - Tasks matching: ${(agent.tags || []).join(', ')}\nmetadata:\n  version: ${agent.version}\n  category: ${agent.category}\n  source: multi-agent catalog\n---\n\n# ${titleCase(agent.name)}\n\n${fullText}\n\n## Tools\n${agent.tools.map(t => `- ${t.name || t.server}`).join('\n')}\n`;
     case 'codex':
       return `# AGENTS.md - ${agent.name}\n\nAgent: ${agent.full_name}\nCategory: ${agent.category}\nDescription: ${agent.description}\n\n## Instructions\n${fullText}\n\n## Available Tools\n${agent.tools.map(t => `- ${t.name || t.server} (${t.type}): ${t.description || ''}`).join('\n')}\n`;
+    case 'codex-config': {
+      const roleName = agent.name.replace(/-/g, '_');
+      const triggerHint = (agent.tags || []).join(', ') || agent.category;
+      const promptSummary = fullText.split('\n\n')[0];
+      const description = [
+        agent.description,
+        '',
+        promptSummary,
+        '',
+        `Use when tasks involve: ${triggerHint}.`,
+        `Catalog source: ${agent.full_name} v${agent.version}.`,
+      ].join('\n');
+      return `#:schema https://developers.openai.com/codex/config-schema.json\n# Codex project config generated from multi-agent catalog: ${agent.full_name}\n# Save as .codex/config.toml, or merge the [agents.${roleName}] block into an existing config.\n\n[features]\nmulti_agent = true\n\n[agents]\nmax_threads = 6\nmax_depth = 1\njob_max_runtime_seconds = 1800\n\n[agents.${roleName}]\ndescription = ${tomlString(description)}\nnickname_candidates = [${tomlString(titleCase(agent.name))}]\n`;
+    }
     case 'gemini':
       return `You are "${agent.name}" - ${agent.description}\n\n${fullText}`;
     case 'chatgpt':

@@ -1,19 +1,33 @@
-# Framework Comparison (April 2026)
+# Framework Comparison
 
 ## Overview
 
-| Framework | Creator | Stars | Language | Model Lock-in | MCP | Best For |
-|-----------|---------|------:|----------|:-------------:|:---:|----------|
-| **CrewAI** | Open source | 44K | Python | No | Yes | Role-based collaboration, easiest learning curve |
-| **LangGraph** | LangChain | 25K | Python | No | Adapter | Complex workflows, production-grade (Uber, Klarna) |
-| **smolagents** | HuggingFace | 26K | Python | No | Yes | Minimal footprint (~1000 lines), code-as-action |
-| **OpenAI Agents SDK** | OpenAI | 21K | Python | OpenAI only | Yes | Fastest setup, handoff pattern |
-| **Google ADK** | Google | 18K | Python/Go/TS | No* | Yes | Multi-language, Google Cloud integration |
-| **Claude Agent SDK** | Anthropic | — | Python/CLI | Claude only | Native | Safety, sub-agents, computer use |
-| **PydanticAI** | Pydantic | 16K | Python | No | Yes | Type safety, durable execution |
-| **MS Agent Framework** | Microsoft | 9K | Python/.NET | No | Yes | Enterprise, merges SK + AutoGen |
+| Framework | Creator | Language | Model Lock-in | MCP | Best For |
+|-----------|---------|----------|:-------------:|:---:|----------|
+| **CrewAI** | Open source | Python | No | Yes | Role-based collaboration, flow orchestration |
+| **LangGraph** | LangChain | Python | No | Adapter | Complex stateful workflows |
+| **smolagents** | HuggingFace | Python | No | Yes | Minimal agent definitions, code-as-action |
+| **OpenAI Agents SDK** | OpenAI | Python/TypeScript | OpenAI-first | Yes | Handoffs, guardrails, tracing |
+| **Google ADK** | Google | Python/Go/TS/Java | No* | Yes | Multi-language workflow agents, Google Cloud integration |
+| **Claude Code subagents** | Anthropic | Markdown/CLI | Claude | Native | Task-specific subagents with isolated context |
+| **PydanticAI** | Pydantic | Python | No | Yes | Type safety and observability |
+| **MS Agent Framework** | Microsoft | Python/.NET | No | Yes | Enterprise workflows and HITL orchestration |
 
 *Google ADK is optimized for Gemini but supports other models.
+
+## Catalog Template Helpers
+
+These helpers return plain dictionaries. They are useful when `multi-agent`
+should recommend or generate a framework plan without importing the optional
+runtime package.
+
+| Framework | Helper | Use When |
+|-----------|--------|----------|
+| OpenAI Agents SDK | `openai_sdk.to_handoff_config(manager, handoffs)` | A specialist should take over the next turn |
+| OpenAI Agents SDK | `openai_sdk.to_agent_tool_config(manager, tools)` | A manager should call specialists for bounded subtasks |
+| Google ADK | `google_adk.to_workflow_config(agents, workflow="parallel")` | Built-in ADK workflow agents match the task shape |
+| CrewAI | `crewai.to_flow_config(agents, flow_name=..., human_feedback=True)` | A deterministic Flow with routing or review gates is needed |
+| smolagents | `smolagents.to_manager_config(manager, managed_agents)` | A CodeAgent-style manager should coordinate managed agents |
 
 ## Decision Matrix
 
@@ -30,9 +44,8 @@
 - You need fine-grained control over state and flow
 
 ### Use smolagents when...
-- You want minimal overhead (~1000 lines of core code)
+- You want a lightweight agent framework
 - Code-as-action approach (agent writes Python, not JSON)
-- You want 30% fewer LLM calls than JSON tool-calling
 - HuggingFace model hub integration matters
 
 ### Use OpenAI Agents SDK when...
@@ -47,22 +60,10 @@
 - Built-in Sequential/Parallel/Loop agents match your patterns
 - Multi-modal (vision, audio) agents are needed
 
-### Use Claude Agent SDK when...
+### Use Claude Code subagents when...
 - Safety and human oversight are top priorities
-- You need computer use (browser, desktop automation)
-- Sub-agent architecture with isolated worktrees
+- Task-specific subagents with isolated context fit the workflow
 - MCP-native tool integration
-
-## Framework Size Comparison
-
-```
-CrewAI           ████████████████████░░░░░░░░░░░░░░░  18,000 lines
-LangGraph        █████████████████████████░░░░░░░░░░░  25,000 lines
-Claude SDK       ████████████░░░░░░░░░░░░░░░░░░░░░░░  12,000 lines
-OpenAI SDK       ████████░░░░░░░░░░░░░░░░░░░░░░░░░░░   8,000 lines
-smolagents       █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1,000 lines
-multi-agent      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░     500 lines
-```
 
 ## Protocol Support
 
@@ -73,5 +74,5 @@ multi-agent      ░░░░░░░░░░░░░░░░░░░░░
 | smolagents | Yes | No | No |
 | OpenAI SDK | Native | Planned | No |
 | Google ADK | Native | Native | Via AG-UI |
-| Claude SDK | Native | No | No |
+| Claude Code subagents | Native | No | No |
 | MS Agent Framework | Native | Native | No |

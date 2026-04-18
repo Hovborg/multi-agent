@@ -37,11 +37,9 @@
 
 ---
 
-**50以上の実戦検証済みエージェント定義。11カテゴリ。8つのオーケストレーションパターン。6つのフレームワークアダプター。5つのエクスポート先。ベンダーロックインなし。**
+**48個のエージェント定義。11カテゴリ。8つのオーケストレーションパターン。6つのフレームワークアダプター。6つのエクスポート先。ベンダーロックインなし。**
 
 `multi-agent` はフレームワーク非依存のプロダクション対応AIエージェントパターンカタログです。YAMLでエージェントを一度定義すれば、CrewAI、LangGraph、OpenAI Agents SDK、Claude SDK、Google ADK、smolagentsのいずれでも実行できます。
-
-> *「企業のエージェント障害の57%は、モデルの障害ではなくオーケストレーションの障害です。」* — Anthropic, 2026
 
 エージェントの車輪の再発明はやめましょう。組み合わせて使いましょう。
 
@@ -51,13 +49,12 @@
 |---|:---:|:---:|:---:|:---:|:---:|
 | フレームワーク非依存の定義 | **対応** | 非対応 | 非対応 | 非対応 | 非対応 |
 | 任意のAIプラットフォームへエクスポート | **対応** | 非対応 | 非対応 | 非対応 | 非対応 |
-| 50以上の役割を持つエージェントカタログ | **対応** | ~10 | ~5 | ~3 | ~5 |
+| 再利用可能なエージェントカタログ | **対応** | フレームワーク固有 | フレームワーク固有 | フレームワーク固有 | フレームワーク固有 |
 | パターンライブラリ（8パターン） | **対応** | 2 | 3 | 2 | 2 |
 | 組み込みコスト見積り | **対応** | 非対応 | 非対応 | 非対応 | 非対応 |
 | エージェント推薦エンジン | **対応** | 非対応 | 非対応 | 非対応 | 非対応 |
 | 任意のLLMに対応 | **対応** | 対応 | 対応 | OpenAIのみ | Claudeのみ |
 | MCPネイティブ | **対応** | 部分的 | アダプター | 対応 | 対応 |
-| コアコード行数 | **~600** | 18K | 25K | 8K | 12K |
 
 ## クイックスタート
 
@@ -161,8 +158,12 @@ multiagent enhance code/code-reviewer -p all
 ## 任意のプラットフォームへエクスポート
 
 ```bash
-multiagent export code/code-reviewer claude-code -o .agents/skills
+multiagent export code/code-reviewer claude-code -o .claude/agents
+multiagent export code/code-reviewer agentskill -o .agents/skills/code-reviewer
+multiagent export code/code-reviewer a2a-agent-card -o ./agent-cards
 multiagent export code/code-reviewer codex
+mkdir -p .codex
+multiagent export code/code-reviewer codex-config > .codex/config.toml
 multiagent export code/code-reviewer gemini -o ./adk-agents
 multiagent export code/code-reviewer chatgpt
 multiagent export code/code-reviewer raw
@@ -170,8 +171,11 @@ multiagent export code/code-reviewer raw
 
 | ターゲット | フォーマット | 対応サービス |
 |------------|-------------|-------------|
-| `claude-code` | `.md` スキルファイル | Claude Code, Claude Desktop |
+| `claude-code` | `.md` subagent ファイル | Claude Code `.claude/agents/` |
+| `agentskill` | `SKILL.md` 形式 Markdown | AgentSkills 互換ツール |
+| `a2a-agent-card` | Agent Card JSON | `.well-known/agent-card.json` による A2A discovery |
 | `codex` | AGENTS.md セクション | OpenAI Codex, OpenClaw |
+| `codex-config` | `.codex/config.toml` スニペット | OpenAI Codex multi-agent ロール |
 | `gemini` | ADK YAML設定 | Google Gemini, Vertex AI |
 | `chatgpt` | システムインストラクション | ChatGPT, Custom GPTs |
 | `raw` | プレーンシステムプロンプト | **任意のLLM** — Ollama, LM Studio, llama.cpp, vLLM等 |

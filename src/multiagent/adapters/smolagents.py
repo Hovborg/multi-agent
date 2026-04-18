@@ -40,6 +40,30 @@ def to_agent_config(
     }
 
 
+def to_manager_config(
+    manager: AgentDefinition,
+    managed_agents: list[AgentDefinition],
+    manager_type: str = "code",
+) -> dict[str, Any]:
+    """Create a smolagents manager config with managed specialist agents."""
+    return {
+        "agent_type": "manager",
+        "manager": to_agent_config(manager, manager_type),
+        "managed_agents": [
+            to_agent_config(definition, agent_type="tool_calling")
+            for definition in managed_agents
+        ],
+        "routing": [
+            {
+                "name": definition.name,
+                "agent": definition.full_name,
+                "description": definition.description,
+            }
+            for definition in managed_agents
+        ],
+    }
+
+
 def from_catalog(
     agent_names: str | list[str],
     agent_type: str = "tool_calling",

@@ -1,5 +1,7 @@
 """Tests for the export module."""
 
+import json
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -8,9 +10,12 @@ from multiagent.catalog import Catalog
 from multiagent.export import (
     EXPORTERS,
     export_agent,
+    to_agentskill,
+    to_a2a_agent_card,
     to_chatgpt,
     to_claude_code,
     to_codex,
+    to_codex_config,
     to_gemini,
     to_raw,
 )
@@ -33,21 +38,35 @@ class TestClaudeCodeExport:
         output = to_claude_code(reviewer)
         assert output.startswith("---")
         assert "name: code-reviewer" in output
-        assert "TRIGGER THIS SKILL WHEN:" in output
+        assert "description: >" in output
+        assert "Use when tasks involve:" in output
 
     def test_has_system_prompt(self, reviewer):
         output = to_claude_code(reviewer)
         assert "expert code reviewer" in output
 
-    def test_has_tools_section(self, reviewer):
+    def test_has_tool_hints_section(self, reviewer):
         output = to_claude_code(reviewer)
-        assert "## Tools" in output
+        assert "## Catalog Tool Hints" in output
         assert "filesystem" in output
 
     def test_has_related_agents(self, reviewer):
         output = to_claude_code(reviewer)
         assert "## Related Agents" in output
         assert "code/test-writer" in output
+
+
+class TestAgentSkillExport:
+    def test_has_skill_frontmatter(self, reviewer):
+        output = to_agentskill(reviewer)
+        assert output.startswith("---")
+        assert "name: code-reviewer" in output
+        assert "TRIGGER THIS SKILL WHEN:" in output
+        assert "metadata:" in output
+
+    def test_has_system_prompt(self, reviewer):
+        output = to_agentskill(reviewer)
+        assert "expert code reviewer" in output
 
 
 class TestCodexExport:
@@ -74,6 +93,83 @@ class TestCodexExport:
         output = to_codex(reviewer)
         assert "### Recommended Patterns" in output
         assert "supervisor-worker" in output
+
+
+class TestCodexConfigExport:
+    def test_is_valid_project_scoped_config(self, reviewer):
+        output = to_codex_config(reviewer)
+        parsed = tomllib.loads(output)
+
+        assert parsed["features"]["multi_agent"] is True
+        assert parsed["agents"]["max_threads"] == 6
+        assert parsed["agents"]["max_depth"] == 1
+        assert parsed["agents"]["job_max_runtime_seconds"] == 1800
+
+    def test_has_agent_role_guidance(self, reviewer):
+        output = to_codex_config(reviewer)
+        parsed = tomllib.loads(output)
+
+        role = parsed["agents"]["code_reviewer"]
+        assert "expert code reviewer" in role["description"]
+        assert "code-review" in role["description"]
+        assert role["nickname_candidates"] == ["Code Reviewer"]
+
+    def test_does_not_emit_dangling_config_file(self, reviewer):
+        output = to_codex_config(reviewer)
+        parsed = tomllib.loads(output)
+
+        assert "config_file" not in parsed["agents"]["code_reviewer"]
+
+    def test_all_catalog_configs_are_valid_toml(self, catalog):
+        for agent in catalog.list_all():
+            output = to_codex_config(agent)
+            parsed = tomllib.loads(output)
+            role_name = agent.name.replace("-", "_")
+            assert role_name in parsed["agents"]
+
+
+class TestA2AAgentCardExport:
+    def test_has_required_agent_card_fields(self, reviewer):
+        output = to_a2a_agent_card(reviewer)
+        card = json.loads(output)
+
+        assert card["name"] == "Code Reviewer"
+        assert card["description"] == reviewer.description
+        assert card["version"] == reviewer.version
+        assert card["supportedInterfaces"][0]["protocolBinding"] == "JSONRPC"
+        assert card["supportedInterfaces"][0]["protocolVersion"] == "1.0"
+        assert card["defaultInputModes"] == ["text/plain", "application/json"]
+        assert card["defaultOutputModes"] == ["text/plain", "application/json"]
+
+    def test_maps_agent_to_a2a_skill(self, reviewer):
+        output = to_a2a_agent_card(reviewer)
+        card = json.loads(output)
+        skill = card["skills"][0]
+
+        assert skill["id"] == "code-reviewer"
+        assert skill["name"] == "Code Reviewer"
+        assert skill["description"] == reviewer.description
+        assert "code-review" in skill["tags"]
+        assert skill["inputModes"] == ["text/plain", "application/json"]
+        assert skill["outputModes"] == ["text/plain", "application/json"]
+
+    def test_declares_only_supported_capabilities(self, reviewer):
+        output = to_a2a_agent_card(reviewer)
+        card = json.loads(output)
+
+        assert card["capabilities"] == {
+            "streaming": False,
+            "pushNotifications": False,
+            "extendedAgentCard": False,
+        }
+        assert "securitySchemes" not in card
+        assert "securityRequirements" not in card
+
+    def test_all_catalog_agent_cards_are_valid_json(self, catalog):
+        for agent in catalog.list_all():
+            output = to_a2a_agent_card(agent)
+            card = json.loads(output)
+            assert card["skills"]
 
 
 class TestGeminiExport:
@@ -121,7 +217,16 @@ class TestRawExport:
 
 class TestExportAgent:
     def test_all_targets_available(self):
-        assert set(EXPORTERS) == {"claude-code", "codex", "gemini", "chatgpt", "raw"}
+        assert set(EXPORTERS) == {
+            "agentskill",
+            "a2a-agent-card",
+            "claude-code",
+            "codex",
+            "codex-config",
+            "gemini",
+            "chatgpt",
+            "raw",
+        }
 
     def test_unknown_target_raises(self, reviewer):
         with pytest.raises(ValueError, match="Unknown target"):
@@ -137,6 +242,19 @@ class TestExportAgent:
         export_agent(reviewer, "gemini", output_dir=tmp_path)
         output_file = tmp_path / "code-reviewer.yaml"
         assert output_file.exists()
+
+    def test_write_codex_config_toml(self, reviewer, tmp_path):
+        export_agent(reviewer, "codex-config", output_dir=tmp_path)
+        output_file = tmp_path / "code-reviewer.toml"
+        assert output_file.exists()
+        parsed = tomllib.loads(output_file.read_text())
+        assert parsed["agents"]["code_reviewer"]["nickname_candidates"] == ["Code Reviewer"]
+
+    def test_write_a2a_agent_card_json(self, reviewer, tmp_path):
+        export_agent(reviewer, "a2a-agent-card", output_dir=tmp_path)
+        output_file = tmp_path / "code-reviewer.agent-card.json"
+        assert output_file.exists()
+        assert json.loads(output_file.read_text())["skills"][0]["id"] == "code-reviewer"
 
     def test_all_catalog_agents_export(self, catalog):
         """Every agent in the catalog should export cleanly to all formats."""

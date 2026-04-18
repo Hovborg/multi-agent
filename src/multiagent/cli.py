@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import click
 from rich.console import Console
 from rich.table import Table
@@ -144,6 +146,67 @@ def recommend(task: str) -> None:
 
 
 @main.command()
+@click.argument("task")
+@click.option("--json", "json_output", is_flag=True, help="Output the route decision as JSON")
+@click.option("--explain", is_flag=True, help="Show match reasons and routing warnings")
+@click.option("--target", type=click.Choice(list(EXPORTERS)), help="Include export plan for a target")
+def route(task: str, json_output: bool, explain: bool, target: str | None) -> None:
+    """Dry-run route a task to agents without executing them."""
+    catalog = Catalog()
+    router = AgentRouter(catalog)
+    rec = router.recommend(task)
+
+    if json_output:
+        payload = rec.to_dict()
+        payload.update(
+            {
+                "task": task,
+                "dry_run": True,
+                "execution": "not_started",
+            }
+        )
+        if target:
+            payload["target"] = target
+            payload["exports"] = _target_export_plan(rec.agents, target)
+        click.echo(json.dumps(payload, indent=2))
+        return
+
+    _print_route_decision(task, rec, explain=explain, target=target)
+
+
+@main.command()
+@click.option("--task", "-t", help="Route one task and exit instead of starting the loop")
+@click.option("--explain", is_flag=True, help="Show match reasons after each route")
+def auto(task: str | None, explain: bool) -> None:
+    """Interactive dry-run router that continuously recommends agents."""
+    catalog = Catalog()
+    router = AgentRouter(catalog)
+
+    console.print("\n[bold cyan]Multi-Agent Auto Router[/bold cyan]")
+    console.print("[dim]Dry-run only. No agents are executed. Type 'exit' to stop.[/dim]\n")
+
+    if task:
+        _print_route_decision(task, router.recommend(task), explain=explain)
+        return
+
+    while True:
+        try:
+            user_task = click.prompt("task", default="", show_default=False)
+        except (EOFError, KeyboardInterrupt):
+            console.print()
+            break
+
+        user_task = user_task.strip()
+        if user_task.lower() in {"exit", "quit", "q", ":q"}:
+            break
+        if not user_task:
+            continue
+
+        _print_route_decision(user_task, router.recommend(user_task), explain=explain)
+        console.print()
+
+
+@main.command()
 def categories() -> None:
     """List all agent categories."""
     catalog = Catalog()
@@ -161,10 +224,14 @@ def categories() -> None:
 def export(agent_name: str, target: str, output: str | None) -> None:
     """Export an agent to a platform format.
 
-    Targets: claude-code, codex, gemini, chatgpt, raw
+    Targets: a2a-agent-card, claude-code, agentskill, codex, codex-config, gemini, chatgpt, raw
 
     Examples:
+        multiagent export code/code-reviewer a2a-agent-card -o ./agent-cards
         multiagent export code/code-reviewer claude-code
+        multiagent export code/code-reviewer agentskill -o .agents/skills/code-reviewer
+        mkdir -p .codex
+        multiagent export code/code-reviewer codex-config > .codex/config.toml
         multiagent export code/code-reviewer chatgpt -o ./output
         multiagent export code/code-reviewer raw
     """
@@ -194,8 +261,11 @@ def export_all(target: str, output: str, category: str | None) -> None:
     """Export all agents (or a category) to a platform format.
 
     Examples:
-        multiagent export-all claude-code -o .agents/skills
+        multiagent export-all claude-code -o .claude/agents
+        multiagent export-all a2a-agent-card -o ./agent-cards
+        multiagent export-all agentskill -o .agents/skills
         multiagent export-all codex -o ./agents -c code
+        multiagent export-all codex-config -o ./codex-configs -c code
         multiagent export-all gemini -o ./adk-agents
     """
     from pathlib import Path
@@ -236,7 +306,7 @@ def enhance(agent_name: str, profile: str, target: str | None, output: str | Non
     Examples:
         multiagent enhance code/code-reviewer
         multiagent enhance code/code-reviewer -p all
-        multiagent enhance code/code-reviewer -p all -t claude-code -o .agents/
+        multiagent enhance code/code-reviewer -p all -t claude-code -o .claude/agents
     """
     catalog = Catalog()
     try:
@@ -487,6 +557,99 @@ def build(task: str | None) -> None:
             console.print(f"  → {p}")
 
     console.print("\n[bold green]Team builder complete![/bold green]")
+
+
+def _print_route_decision(task: str, rec, explain: bool = False, target: str | None = None) -> None:
+    """Render a dry-run route decision for humans."""
+    console.print(f"\n[bold]Task:[/bold] {task}")
+    console.print("[bold yellow]Dry run:[/bold yellow] no agents executed")
+    console.print(f"[bold]Pattern:[/bold] {rec.pattern} — {rec.pattern_reason}")
+    console.print(f"[bold]Confidence:[/bold] {rec.confidence:.0%}\n")
+
+    if rec.agents:
+        table = Table(show_header=True, header_style="bold cyan")
+        table.add_column("Agent", style="green")
+        table.add_column("Category", style="dim")
+        table.add_column("Description")
+        for agent in rec.agents:
+            table.add_row(agent.full_name, agent.category, agent.description)
+        console.print(table)
+
+        estimate = CostEstimator.estimate_team(rec.agents)
+        cheapest = estimate.cheapest()
+        console.print(
+            f"\n[bold]Cheapest estimate:[/bold] {cheapest.model} — "
+            f"${cheapest.cost_usd:.4f}/run"
+        )
+
+        if target:
+            console.print(f"\n[bold]Target:[/bold] {target}")
+            export_table = Table(show_header=True, header_style="bold cyan")
+            export_table.add_column("Agent", style="green")
+            export_table.add_column("Format")
+            export_table.add_column("Command", style="dim")
+            for item in _target_export_plan(rec.agents, target):
+                export_table.add_row(item["agent"], item["format"], item["command"])
+            console.print(export_table)
+            console.print("\n[bold]Export commands:[/bold]")
+            for item in _target_export_plan(rec.agents, target):
+                console.print(f"  {item['command']}")
+    else:
+        console.print("[yellow]No matching agents found.[/yellow]")
+
+    if rec.alternatives:
+        console.print(f"[bold]Alternative patterns:[/bold] {', '.join(rec.alternatives)}")
+
+    if explain:
+        console.print("\n[bold]Why[/bold]")
+        for reason in rec.reasons or ["No routing reasons were recorded."]:
+            console.print(f"  - {reason}")
+        if rec.warnings:
+            console.print("\n[bold yellow]Warnings[/bold yellow]")
+            for warning in rec.warnings:
+                console.print(f"  - {warning}")
+
+
+def _target_export_plan(agents, target: str) -> list[dict[str, str]]:
+    """Build dry-run export commands for a routed agent team."""
+    return [
+        {
+            "agent": agent.full_name,
+            "target": target,
+            "format": _target_format_label(target),
+            "output_file": f"exports/{target}/{agent.category}/{agent.name}{_target_extension(target)}",
+            "command": f"multiagent export {agent.full_name} {target}",
+        }
+        for agent in agents
+    ]
+
+
+def _target_format_label(target: str) -> str:
+    labels = {
+        "a2a-agent-card": "A2A Agent Card JSON",
+        "agentskill": "AgentSkills SKILL.md",
+        "claude-code": "Claude Code subagent Markdown",
+        "codex": "Codex AGENTS.md section",
+        "codex-config": "Codex config.toml snippet",
+        "gemini": "Google ADK YAML",
+        "chatgpt": "ChatGPT system instructions",
+        "raw": "Plain system prompt",
+    }
+    return labels[target]
+
+
+def _target_extension(target: str) -> str:
+    extensions = {
+        "a2a-agent-card": ".agent-card.json",
+        "agentskill": ".md",
+        "claude-code": ".md",
+        "codex": ".md",
+        "codex-config": ".toml",
+        "gemini": ".yaml",
+        "chatgpt": ".txt",
+        "raw": ".txt",
+    }
+    return extensions[target]
 
 
 if __name__ == "__main__":

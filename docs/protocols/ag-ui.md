@@ -2,9 +2,7 @@
 
 ## What is AG-UI?
 
-AG-UI is CopilotKit's open protocol for streaming agent interactions to frontend UIs. It completes the protocol stack: MCP (tools), A2A (agents), AG-UI (users).
-
-**Status (April 2026):** Growing adoption. Integrated with AWS and Google ADK.
+AG-UI is an open protocol for streaming agent interactions to frontend UIs. It completes the protocol stack: MCP (tools), A2A (agents), AG-UI (users).
 
 ## How AG-UI Works
 
