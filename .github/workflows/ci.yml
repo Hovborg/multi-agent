@@ -30,6 +30,9 @@ jobs:
       - name: Test
         run: pytest -v
 
+      - name: Routing eval gate
+        run: multiagent eval-routing --fail-under 1.0
+
   validate-catalog:
     runs-on: ubuntu-latest
     steps:
