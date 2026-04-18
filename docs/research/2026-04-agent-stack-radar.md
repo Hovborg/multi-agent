@@ -225,7 +225,8 @@ smolagents:
 ## Prioriteret roadmap
 
 1. Done: Adapter-specific template helpers for OpenAI handoffs/as_tool, ADK sequential/parallel, CrewAI Flow og smolagents manager.
-2. Næste: Eval corpus til routing: 30-50 task prompts med forventet agent/pattern/target.
+2. Done: Routing eval corpus med 32 task prompts og forventet agent/pattern/target.
+3. Næste: Brug routing eval som CI-gate med `multiagent eval-routing --fail-under 1.0`.
 
 ## Beslutning
 

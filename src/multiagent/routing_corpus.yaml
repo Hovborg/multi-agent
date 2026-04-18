@@ -1,0 +1,161 @@
+cases:
+  - id: code-review-tests-codex-config
+    task: Review this PR and write missing tests for Codex config.
+    expected_agents: [code/code-reviewer, code/test-writer]
+    expected_pattern: supervisor-worker
+    expected_target: codex-config
+  - id: large-refactor-claude-code
+    task: Plan a large refactor for Claude Code subagent use.
+    expected_agents: [code/refactorer]
+    expected_pattern: split-and-merge
+    expected_target: claude-code
+  - id: debug-agent-skill
+    task: Fix bug in the auth flow and package it as an AgentSkill.
+    expected_agents: [code/debugger]
+    expected_pattern: supervisor-worker
+    expected_target: agentskill
+  - id: security-audit-a2a
+    task: Run a security audit and expose the result as an A2A agent card.
+    expected_agents: [code/security-auditor]
+    expected_pattern: supervisor-worker
+    expected_target: a2a-agent-card
+  - id: generate-code-chatgpt
+    task: Generate code for a Custom GPT handoff helper.
+    expected_agents: [code/code-generator]
+    expected_pattern: reflection
+    expected_target: chatgpt
+  - id: docs-raw-prompt
+    task: Update docs and export the result as a raw prompt.
+    expected_agents: [code/documentation-writer]
+    expected_pattern: supervisor-worker
+    expected_target: raw
+  - id: research-google-adk
+    task: Research latest agent frameworks for Google ADK.
+    expected_agents: [research/deep-researcher]
+    expected_pattern: parallel
+    expected_target: gemini
+  - id: scrape-a2a
+    task: Scrape product listings and publish an A2A agent card.
+    expected_agents: [research/web-scraper]
+    expected_pattern: supervisor-worker
+    expected_target: a2a-agent-card
+  - id: fact-check-codex
+    task: Fact check this article for Codex config.
+    expected_agents: [research/fact-checker]
+    expected_pattern: supervisor-worker
+    expected_target: codex-config
+  - id: academic-paper-raw
+    task: Analyze this academic paper as a raw prompt.
+    expected_agents: [research/paper-analyst]
+    expected_pattern: supervisor-worker
+    expected_target: raw
+  - id: market-research-claude
+    task: Market research the competitor landscape for Claude Code.
+    expected_agents: [research/competitive-intel]
+    expected_pattern: parallel
+    expected_target: claude-code
+  - id: analyze-data-chatgpt
+    task: Analyze data from a CSV and create a report for ChatGPT.
+    expected_agents: [data/data-analyst, data/report-writer]
+    expected_pattern: supervisor-worker
+    expected_target: chatgpt
+  - id: sql-agents-md
+    task: Write a SQL query and export guidance for AGENTS.md.
+    expected_agents: [data/sql-generator]
+    expected_pattern: reflection
+    expected_target: codex
+  - id: cicd-codex-config
+    task: Build a CI/CD pipeline for Codex config.
+    expected_agents: [devops/ci-cd-agent]
+    expected_pattern: sequential
+    expected_target: codex-config
+  - id: terraform-google-adk
+    task: Provision Terraform infrastructure for Google ADK.
+    expected_agents: [devops/infra-provisioner]
+    expected_pattern: supervisor-worker
+    expected_target: gemini
+  - id: monitoring-a2a
+    task: Create a monitoring alert workflow as an A2A card.
+    expected_agents: [devops/monitoring-agent]
+    expected_pattern: sequential
+    expected_target: a2a-agent-card
+  - id: incident-process-claude
+    task: Incident response process for Claude Code.
+    expected_agents: [devops/incident-responder]
+    expected_pattern: sequential
+    expected_target: claude-code
+  - id: blog-chatgpt
+    task: Draft a blog post and edit the article for ChatGPT.
+    expected_agents: [content/writer, content/editor]
+    expected_pattern: reflection
+    expected_target: chatgpt
+  - id: translation-raw
+    task: Translate the newsletter to Danish as a raw prompt.
+    expected_agents: [content/translator, content/writer]
+    expected_pattern: supervisor-worker
+    expected_target: raw
+  - id: seo-agentskill
+    task: SEO optimize this article for an AgentSkill.
+    expected_agents: [content/seo-optimizer]
+    expected_pattern: supervisor-worker
+    expected_target: agentskill
+  - id: trading-codex
+    task: Trading analysis for Codex config.
+    expected_agents: [finance/trading-analyst]
+    expected_pattern: supervisor-worker
+    expected_target: codex-config
+  - id: portfolio-chatgpt
+    task: Optimize an investment portfolio for ChatGPT.
+    expected_agents: [finance/portfolio-optimizer]
+    expected_pattern: supervisor-worker
+    expected_target: chatgpt
+  - id: fraud-a2a
+    task: Detect fraud in transactions as an A2A agent card.
+    expected_agents: [finance/fraud-detector]
+    expected_pattern: supervisor-worker
+    expected_target: a2a-agent-card
+  - id: tax-raw
+    task: Tax analysis as a raw prompt.
+    expected_agents: [finance/tax-advisor]
+    expected_pattern: supervisor-worker
+    expected_target: raw
+  - id: support-handoff-a2a
+    task: Route a customer support ticket to the right tier as A2A.
+    expected_agents: [support/customer-support, support/ticket-router]
+    expected_pattern: handoff
+    expected_target: a2a-agent-card
+  - id: faq-chatgpt
+    task: Build an FAQ knowledge base for ChatGPT.
+    expected_agents: [support/knowledge-base-builder]
+    expected_pattern: supervisor-worker
+    expected_target: chatgpt
+  - id: contract-agentskill
+    task: Review contract compliance for an AgentSkill.
+    expected_agents: [legal/contract-reviewer, legal/compliance-checker]
+    expected_pattern: supervisor-worker
+    expected_target: agentskill
+  - id: legal-research-codex
+    task: Legal research on new regulation for Codex config.
+    expected_agents: [legal/legal-researcher, legal/compliance-checker]
+    expected_pattern: parallel
+    expected_target: codex-config
+  - id: meeting-claude
+    task: Schedule a meeting on the calendar for Claude Code.
+    expected_agents: [personal/meeting-scheduler]
+    expected_pattern: supervisor-worker
+    expected_target: claude-code
+  - id: vulnerability-raw
+    task: Vulnerability scan and log analysis as a raw prompt.
+    expected_agents: [security/vulnerability-scanner, security/log-analyzer]
+    expected_pattern: supervisor-worker
+    expected_target: raw
+  - id: access-review-codex
+    task: Access review for Codex config.
+    expected_agents: [security/access-reviewer]
+    expected_pattern: supervisor-worker
+    expected_target: codex-config
+  - id: forensic-a2a
+    task: Forensic incident analysis as an A2A agent card.
+    expected_agents: [security/incident-analyst]
+    expected_pattern: supervisor-worker
+    expected_target: a2a-agent-card

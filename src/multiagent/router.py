@@ -19,6 +19,16 @@ class TaskRule:
     reason: str
 
 
+@dataclass(frozen=True)
+class TargetRule:
+    """Weighted phrase rule for selecting an export target."""
+
+    phrase: str
+    target: str
+    weight: int
+    reason: str
+
+
 TASK_RULES: tuple[TaskRule, ...] = (
     # Code tasks
     TaskRule("code review", ("code/code-reviewer", "code/security-auditor"), 8, "code review"),
@@ -116,6 +126,29 @@ TASK_RULES: tuple[TaskRule, ...] = (
     TaskRule("penetration", ("security/vulnerability-scanner",), 7, "penetration testing"),
 )
 
+TARGET_RULES: tuple[TargetRule, ...] = (
+    TargetRule("a2a", "a2a-agent-card", 10, "A2A protocol"),
+    TargetRule("agent card", "a2a-agent-card", 10, "A2A Agent Card"),
+    TargetRule(".well-known", "a2a-agent-card", 8, "well-known discovery"),
+    TargetRule("claude code", "claude-code", 10, "Claude Code subagent"),
+    TargetRule("subagent", "claude-code", 6, "subagent format"),
+    TargetRule("agentskill", "agentskill", 10, "AgentSkills format"),
+    TargetRule("skill.md", "agentskill", 10, "SKILL.md format"),
+    TargetRule("agent skill", "agentskill", 8, "AgentSkills format"),
+    TargetRule("codex config", "codex-config", 10, "Codex project config"),
+    TargetRule("openclaw", "codex-config", 10, "OpenClaw project config"),
+    TargetRule("codex role", "codex-config", 8, "Codex role config"),
+    TargetRule("codex cli", "codex-config", 7, "Codex CLI config"),
+    TargetRule("agents.md", "codex", 10, "AGENTS.md instructions"),
+    TargetRule("google adk", "gemini", 10, "Google ADK config"),
+    TargetRule("gemini", "gemini", 9, "Gemini config"),
+    TargetRule("vertex", "gemini", 8, "Vertex AI config"),
+    TargetRule("chatgpt", "chatgpt", 10, "ChatGPT instructions"),
+    TargetRule("custom gpt", "chatgpt", 10, "Custom GPT instructions"),
+    TargetRule("raw prompt", "raw", 10, "raw system prompt"),
+    TargetRule("system prompt", "raw", 7, "system prompt export"),
+)
+
 # Pattern recommendations based on task characteristics
 PATTERN_RULES: list[tuple[list[str], str, str]] = [
     # (keywords, pattern, reason)
@@ -141,6 +174,8 @@ class Recommendation:
     alternatives: list[str] = field(default_factory=list)
     reasons: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    suggested_target: str = "codex-config"
+    target_reason: str = "Default local Codex/OpenClaw project config"
 
     def describe(self) -> str:
         lines = [
@@ -173,6 +208,8 @@ class Recommendation:
             "alternatives": self.alternatives,
             "reasons": self.reasons,
             "warnings": self.warnings,
+            "suggested_target": self.suggested_target,
+            "target_reason": self.target_reason,
         }
 
 
@@ -265,6 +302,8 @@ class AgentRouter:
         if not agents:
             warnings.append("No agents matched the task.")
 
+        suggested_target, target_reason = self.recommend_target(task)
+
         return Recommendation(
             agents=agents,
             pattern=pattern,
@@ -273,7 +312,32 @@ class AgentRouter:
             alternatives=alternatives[:3],
             reasons=reasons,
             warnings=warnings,
+            suggested_target=suggested_target,
+            target_reason=target_reason,
         )
+
+    def recommend_target(self, task: str) -> tuple[str, str]:
+        """Recommend the export target that best matches task wording."""
+        task_lower = task.lower()
+        target_scores: dict[str, int] = {}
+        target_reasons: dict[str, list[str]] = {}
+        first_seen: dict[str, int] = {}
+
+        for index, rule in enumerate(TARGET_RULES):
+            if not _contains_phrase(task_lower, rule.phrase):
+                continue
+            target_scores[rule.target] = target_scores.get(rule.target, 0) + rule.weight
+            target_reasons.setdefault(rule.target, []).append(rule.reason)
+            first_seen.setdefault(rule.target, index)
+
+        if not target_scores:
+            return "codex-config", "Default local Codex/OpenClaw project config"
+
+        target = min(
+            target_scores,
+            key=lambda item: (-target_scores[item], first_seen[item]),
+        )
+        return target, ", ".join(target_reasons[target])
 
 
 def _contains_phrase(text: str, phrase: str) -> bool:

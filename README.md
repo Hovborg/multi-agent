@@ -171,6 +171,9 @@ multiagent route "review this PR and write missing tests" --target a2a-agent-car
 
 # Machine-readable route decision with target export plan
 multiagent route "review this PR and write missing tests" --target codex-config --json
+
+# Regression-test the built-in routing corpus
+multiagent eval-routing --json
 ```
 
 ## Agent Catalog
