@@ -432,6 +432,13 @@ def eval_routing_cmd(json_output: bool, fail_under: float | None) -> None:
             f"\n[bold]Routing eval:[/bold] {report.passed}/{report.total} "
             f"passed ({report.pass_rate:.0%})"
         )
+        console.print(
+            "[dim]Scores:[/dim] "
+            f"agents {report.scores['agent_match_rate']:.0%}, "
+            f"patterns {report.scores['pattern_match_rate']:.0%}, "
+            f"targets {report.scores['target_match_rate']:.0%}, "
+            f"forbidden {report.scores['forbidden_match_rate']:.0%}"
+        )
         if report.failures:
             table = Table(show_header=True, header_style="bold red")
             table.add_column("Case")

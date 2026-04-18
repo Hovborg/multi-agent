@@ -199,3 +199,21 @@ cases:
     expected_agents: [content/translator]
     expected_pattern: supervisor-worker
     expected_target: agentskill
+  - id: negative-meeting-notes-no-scheduler
+    task: Write meeting notes from this transcript; do not schedule anything.
+    expected_agents: [personal/note-taker]
+    forbidden_agents: [personal/meeting-scheduler]
+    expected_pattern: reflection
+    expected_target: codex-config
+  - id: negative-fact-check-no-scraper
+    task: Fact check these claims from provided sources; do not scrape websites.
+    expected_agents: [research/fact-checker]
+    forbidden_agents: [research/web-scraper]
+    expected_pattern: supervisor-worker
+    expected_target: codex-config
+  - id: negative-edit-blog-no-writer
+    task: Edit existing blog copy for ChatGPT; do not write a new article.
+    expected_agents: [content/editor]
+    forbidden_agents: [content/writer]
+    expected_pattern: reflection
+    expected_target: chatgpt

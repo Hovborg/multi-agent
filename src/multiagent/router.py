@@ -29,6 +29,15 @@ class TargetRule:
     reason: str
 
 
+@dataclass(frozen=True)
+class SuppressionRule:
+    """Phrase rule for suppressing agents when a prompt explicitly excludes work."""
+
+    phrase: str
+    agents: tuple[str, ...]
+    reason: str
+
+
 TASK_RULES: tuple[TaskRule, ...] = (
     # Code tasks
     TaskRule("code review", ("code/code-reviewer", "code/security-auditor"), 8, "code review"),
@@ -96,6 +105,8 @@ TASK_RULES: tuple[TaskRule, ...] = (
     TaskRule("newsletter", ("content/writer",), 6, "newsletter"),
     TaskRule("content", ("content/writer",), 5, "content"),
     TaskRule("edit a blog post", ("content/editor",), 8, "blog editing"),
+    TaskRule("edit existing blog", ("content/editor",), 8, "blog editing"),
+    TaskRule("blog copy", ("content/editor",), 8, "blog copy editing"),
     TaskRule("rediger", ("content/editor",), 7, "Danish editing"),
     TaskRule("edit blog", ("content/editor",), 7, "blog editing"),
     TaskRule("edit article", ("content/editor",), 7, "article editing"),
@@ -134,6 +145,7 @@ TASK_RULES: tuple[TaskRule, ...] = (
     TaskRule("calendar", ("personal/meeting-scheduler",), 6, "calendar scheduling"),
     TaskRule("kalenderen", ("personal/meeting-scheduler",), 6, "Danish calendar scheduling"),
     TaskRule("notes", ("personal/note-taker",), 5, "notes"),
+    TaskRule("meeting notes", ("personal/note-taker",), 9, "meeting notes"),
     TaskRule("todo", ("personal/task-manager",), 5, "task management"),
     TaskRule("schedule", ("personal/meeting-scheduler",), 5, "scheduling"),
     # Security tasks
@@ -144,6 +156,19 @@ TASK_RULES: tuple[TaskRule, ...] = (
     TaskRule("access review", ("security/access-reviewer",), 8, "access review"),
     TaskRule("forensic", ("security/incident-analyst",), 7, "forensic analysis"),
     TaskRule("penetration", ("security/vulnerability-scanner",), 7, "penetration testing"),
+)
+
+SUPPRESSION_RULES: tuple[SuppressionRule, ...] = (
+    SuppressionRule(
+        "do not schedule",
+        ("personal/meeting-scheduler",),
+        "explicitly not scheduling",
+    ),
+    SuppressionRule("not schedule", ("personal/meeting-scheduler",), "explicitly not scheduling"),
+    SuppressionRule("do not write", ("content/writer",), "explicitly not writing"),
+    SuppressionRule("not write", ("content/writer",), "explicitly not writing"),
+    SuppressionRule("do not scrape", ("research/web-scraper",), "explicitly not scraping"),
+    SuppressionRule("not scrape", ("research/web-scraper",), "explicitly not scraping"),
 )
 
 TARGET_RULES: tuple[TargetRule, ...] = (
@@ -280,6 +305,16 @@ class AgentRouter:
             if matched_agent_names:
                 reasons.append("No routing rules matched; used catalog search fallback.")
 
+        suppressed_agents: set[str] = set()
+        for rule in SUPPRESSION_RULES:
+            if not _contains_phrase(task_lower, rule.phrase):
+                continue
+            for agent_name in rule.agents:
+                suppressed_agents.add(agent_name)
+                if agent_name in matched_agent_names:
+                    matched_agent_names.remove(agent_name)
+                    reasons.append(f"{agent_name}: suppressed because {rule.reason}")
+
         # Load agent definitions
         agents = []
         for name in matched_agent_names:
@@ -293,7 +328,7 @@ class AgentRouter:
         if len(agents) == 1:
             companions = self.catalog.get_team_for(agents[0].full_name)
             for c in companions[:2]:
-                if c.full_name not in matched_agent_names:
+                if c.full_name not in matched_agent_names and c.full_name not in suppressed_agents:
                     agents.append(c)
                     reasons.append(f"{c.full_name}: companion for {agents[0].full_name}")
 

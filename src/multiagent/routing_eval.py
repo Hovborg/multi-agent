@@ -24,6 +24,7 @@ class RoutingEvalCase:
     expected_agents: tuple[str, ...]
     expected_pattern: str
     expected_target: str
+    forbidden_agents: tuple[str, ...] = ()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> RoutingEvalCase:
@@ -36,6 +37,7 @@ class RoutingEvalCase:
             expected_agents=tuple(str(agent) for agent in data["expected_agents"]),
             expected_pattern=str(data["expected_pattern"]),
             expected_target=expected_target,
+            forbidden_agents=tuple(str(agent) for agent in data.get("forbidden_agents", [])),
         )
 
 
@@ -61,8 +63,17 @@ class RoutingEvalResult:
         return self.actual_target == self.case.expected_target
 
     @property
+    def forbidden_match(self) -> bool:
+        return not set(self.case.forbidden_agents).intersection(self.actual_agents)
+
+    @property
     def passed(self) -> bool:
-        return self.agent_match and self.pattern_match and self.target_match
+        return (
+            self.agent_match
+            and self.pattern_match
+            and self.target_match
+            and self.forbidden_match
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -72,6 +83,8 @@ class RoutingEvalResult:
             "expected_agents": list(self.case.expected_agents),
             "actual_agents": list(self.actual_agents),
             "agent_match": self.agent_match,
+            "forbidden_agents": list(self.case.forbidden_agents),
+            "forbidden_match": self.forbidden_match,
             "expected_pattern": self.case.expected_pattern,
             "actual_pattern": self.actual_pattern,
             "pattern_match": self.pattern_match,
@@ -109,14 +122,30 @@ class RoutingEvalReport:
     def failures(self) -> tuple[RoutingEvalResult, ...]:
         return tuple(result for result in self.results if not result.passed)
 
+    @property
+    def scores(self) -> dict[str, float]:
+        return {
+            "agent_match_rate": self._match_rate("agent_match"),
+            "pattern_match_rate": self._match_rate("pattern_match"),
+            "target_match_rate": self._match_rate("target_match"),
+            "forbidden_match_rate": self._match_rate("forbidden_match"),
+        }
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "total": self.total,
             "passed": self.passed,
             "failed": self.failed,
             "pass_rate": self.pass_rate,
+            "scores": self.scores,
             "results": [result.to_dict() for result in self.results],
         }
+
+    def _match_rate(self, field_name: str) -> float:
+        if not self.total:
+            return 0.0
+        matches = sum(1 for result in self.results if getattr(result, field_name))
+        return matches / self.total
 
 
 def load_routing_corpus(path: Path | str | None = None) -> list[RoutingEvalCase]:
