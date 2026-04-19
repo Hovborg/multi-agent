@@ -172,6 +172,18 @@ SUPPRESSION_RULES: tuple[SuppressionRule, ...] = (
 )
 
 TARGET_RULES: tuple[TargetRule, ...] = (
+    TargetRule("openai agents sdk", "openai-agents", 12, "OpenAI Agents SDK"),
+    TargetRule("openai agents", "openai-agents", 10, "OpenAI Agents SDK"),
+    TargetRule("openai sdk", "openai-agents", 10, "OpenAI Agents SDK"),
+    TargetRule("agents sdk", "openai-agents", 8, "OpenAI Agents SDK"),
+    TargetRule("agent-as-tool", "openai-agents", 8, "OpenAI Agents SDK agent-as-tool"),
+    TargetRule("openai handoff", "openai-agents", 8, "OpenAI Agents SDK handoff"),
+    TargetRule("google adk", "adk", 12, "Google ADK workflow plan"),
+    TargetRule("adk", "adk", 10, "Google ADK workflow plan"),
+    TargetRule("crewai flow", "crewai-flow", 12, "CrewAI Flow"),
+    TargetRule("crewai", "crewai-flow", 10, "CrewAI Flow"),
+    TargetRule("smolagents", "smolagents-manager", 10, "smolagents manager"),
+    TargetRule("managed_agents", "smolagents-manager", 10, "smolagents manager"),
     TargetRule("a2a", "a2a-agent-card", 10, "A2A protocol"),
     TargetRule("agent card", "a2a-agent-card", 10, "A2A Agent Card"),
     TargetRule(".well-known", "a2a-agent-card", 8, "well-known discovery"),
@@ -185,7 +197,6 @@ TARGET_RULES: tuple[TargetRule, ...] = (
     TargetRule("codex role", "codex-config", 8, "Codex role config"),
     TargetRule("codex cli", "codex-config", 7, "Codex CLI config"),
     TargetRule("agents.md", "codex", 10, "AGENTS.md instructions"),
-    TargetRule("google adk", "gemini", 10, "Google ADK config"),
     TargetRule("gemini", "gemini", 9, "Gemini config"),
     TargetRule("vertex", "gemini", 8, "Vertex AI config"),
     TargetRule("chatgpt", "chatgpt", 10, "ChatGPT instructions"),
@@ -228,6 +239,8 @@ class Recommendation:
     warnings: list[str] = field(default_factory=list)
     suggested_target: str = "codex-config"
     target_reason: str = "Default local Codex/OpenClaw project config"
+    risk: dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
 
     def describe(self) -> str:
         lines = [
@@ -262,6 +275,8 @@ class Recommendation:
             "warnings": self.warnings,
             "suggested_target": self.suggested_target,
             "target_reason": self.target_reason,
+            "risk": self.risk,
+            "context": self.context,
         }
 
 
@@ -365,6 +380,12 @@ class AgentRouter:
             warnings.append("No agents matched the task.")
 
         suggested_target, target_reason = self.recommend_target(task)
+        risk = _assess_risk(agents)
+        context = _assess_context(agents)
+        if risk["requires_human_review"]:
+            warnings.append("Human review recommended before side-effect execution.")
+        if context["context_size_risk"] == "high":
+            warnings.append("High context-size risk; prefer progressive loading or summarization.")
 
         return Recommendation(
             agents=agents,
@@ -376,6 +397,8 @@ class AgentRouter:
             warnings=warnings,
             suggested_target=suggested_target,
             target_reason=target_reason,
+            risk=risk,
+            context=context,
         )
 
     def recommend_target(self, task: str) -> tuple[str, str]:
@@ -407,3 +430,100 @@ def _contains_phrase(text: str, phrase: str) -> bool:
     escaped_words = [re.escape(word) for word in phrase.lower().split()]
     pattern = r"\s+".join(escaped_words)
     return re.search(rf"(?<![\w-]){pattern}(?![\w-])", text) is not None
+
+
+_RISK_LEVELS = {"none": 0, "low": 1, "medium": 2, "high": 3}
+_RISK_BY_SCORE = {score: name for name, score in _RISK_LEVELS.items()}
+_SIDE_EFFECT_TOOL_HINTS = (
+    "create",
+    "delete",
+    "send",
+    "schedule",
+    "book",
+    "provision",
+    "deploy",
+    "trade",
+    "update",
+    "write",
+)
+_SIDE_EFFECT_AGENT_HINTS = (
+    "meeting-scheduler",
+    "email-assistant",
+    "infra-provisioner",
+    "ci-cd-agent",
+    "trading-analyst",
+)
+_CONTEXT_LOADING_RANK = {"trigger": 0, "progressive": 1, "always": 2}
+
+
+def _assess_risk(agents: list[AgentDefinition]) -> dict[str, Any]:
+    max_risk_score = 0
+    requires_human_review = False
+    reasons: list[str] = []
+
+    for agent in agents:
+        explicit_risk = str(agent.safety.get("side_effect_risk", "")).lower()
+        if explicit_risk in _RISK_LEVELS:
+            max_risk_score = max(max_risk_score, _RISK_LEVELS[explicit_risk])
+            reasons.append(f"{agent.full_name}: safety.side_effect_risk={explicit_risk}")
+
+        if agent.safety.get("requires_human_review") is True:
+            requires_human_review = True
+            reasons.append(f"{agent.full_name}: safety.requires_human_review=true")
+
+        if any(hint in agent.name for hint in _SIDE_EFFECT_AGENT_HINTS):
+            max_risk_score = max(max_risk_score, _RISK_LEVELS["medium"])
+            requires_human_review = True
+            reasons.append(f"{agent.full_name}: agent role can create external side effects")
+
+        for tool in agent.tools:
+            tool_name = str(tool.get("name", tool.get("server", ""))).lower()
+            if any(hint in tool_name for hint in _SIDE_EFFECT_TOOL_HINTS):
+                max_risk_score = max(max_risk_score, _RISK_LEVELS["medium"])
+                requires_human_review = True
+                reasons.append(f"{agent.full_name}: tool '{tool_name}' can change external state")
+
+    risk_name = _RISK_BY_SCORE[max_risk_score]
+    return {
+        "side_effect_risk": risk_name,
+        "requires_human_review": requires_human_review,
+        "reasons": reasons,
+    }
+
+
+def _assess_context(agents: list[AgentDefinition]) -> dict[str, Any]:
+    estimated_tokens = 0
+    loading = "trigger"
+    reasons: list[str] = []
+
+    for agent in agents:
+        context_tokens = agent.context.get("max_context_tokens")
+        if context_tokens is None:
+            context_tokens = agent.parameters.get(
+                "max_tokens",
+                agent.cost_profile.input_tokens_per_run,
+            )
+        try:
+            token_count = int(context_tokens)
+        except (TypeError, ValueError):
+            token_count = agent.cost_profile.input_tokens_per_run
+        estimated_tokens += token_count
+        reasons.append(f"{agent.full_name}: estimated {token_count} context tokens")
+
+        agent_loading = str(agent.context.get("loading", "trigger")).lower()
+        if _CONTEXT_LOADING_RANK.get(agent_loading, 0) > _CONTEXT_LOADING_RANK[loading]:
+            loading = agent_loading
+
+    if estimated_tokens >= 16_000:
+        context_size_risk = "high"
+    elif estimated_tokens >= 8_000:
+        context_size_risk = "medium"
+    else:
+        context_size_risk = "low"
+
+    return {
+        "loading": loading,
+        "estimated_context_tokens": estimated_tokens,
+        "context_size_risk": context_size_risk,
+        "reasons": reasons,
+    }

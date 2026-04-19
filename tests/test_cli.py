@@ -21,6 +21,8 @@ def test_route_json_outputs_machine_readable_decision():
     assert "content/writer" not in names
     assert payload["dry_run"] is True
     assert payload["reasons"]
+    assert payload["risk"]["side_effect_risk"] in {"none", "low", "medium", "high"}
+    assert payload["context"]["context_size_risk"] in {"low", "medium", "high"}
 
 
 def test_route_json_includes_target_export_plan():

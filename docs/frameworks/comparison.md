@@ -29,6 +29,15 @@ runtime package.
 | CrewAI | `crewai.to_flow_config(agents, flow_name=..., human_feedback=True)` | A deterministic Flow with routing or review gates is needed |
 | smolagents | `smolagents.to_manager_config(manager, managed_agents)` | A CodeAgent-style manager should coordinate managed agents |
 
+The same templates are available from route dry-runs:
+
+```bash
+multiagent route "review this PR with OpenAI Agents SDK" --target openai-agents --json
+multiagent route "research three sources with Google ADK" --target adk --json
+multiagent route "build a CrewAI review flow" --target crewai-flow --json
+multiagent route "coordinate specialists with smolagents" --target smolagents-manager --json
+```
+
 ## Decision Matrix
 
 ### Use CrewAI when...

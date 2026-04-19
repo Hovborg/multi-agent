@@ -33,12 +33,14 @@ cases:
     task: Research latest agent frameworks for Google ADK.
     expected_agents: [research/deep-researcher]
     expected_pattern: parallel
-    expected_target: gemini
+    expected_target: adk
   - id: scrape-a2a
     task: Scrape product listings and publish an A2A agent card.
     expected_agents: [research/web-scraper]
     expected_pattern: supervisor-worker
     expected_target: a2a-agent-card
+    expected_context:
+      min_context_size_risk: medium
   - id: fact-check-codex
     task: Fact check this article for Codex config.
     expected_agents: [research/fact-checker]
@@ -73,7 +75,7 @@ cases:
     task: Provision Terraform infrastructure for Google ADK.
     expected_agents: [devops/infra-provisioner]
     expected_pattern: supervisor-worker
-    expected_target: gemini
+    expected_target: adk
   - id: monitoring-a2a
     task: Create a monitoring alert workflow as an A2A card.
     expected_agents: [devops/monitoring-agent]
@@ -144,6 +146,9 @@ cases:
     expected_agents: [personal/meeting-scheduler]
     expected_pattern: supervisor-worker
     expected_target: claude-code
+    expected_risk:
+      min_side_effect_risk: medium
+      requires_human_review: true
   - id: vulnerability-raw
     task: Vulnerability scan and log analysis as a raw prompt.
     expected_agents: [security/vulnerability-scanner, security/log-analyzer]
@@ -189,6 +194,9 @@ cases:
     expected_agents: [personal/meeting-scheduler]
     expected_pattern: supervisor-worker
     expected_target: claude-code
+    expected_risk:
+      min_side_effect_risk: medium
+      requires_human_review: true
   - id: da-support-a2a
     task: Route et kundesupport supportticket til korrekt niveau som A2A.
     expected_agents: [support/customer-support, support/ticket-router]

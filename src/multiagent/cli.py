@@ -12,6 +12,7 @@ from multiagent.catalog import Catalog
 from multiagent.cost import CostEstimator
 from multiagent.enhance import enhance_agent, list_enhancements
 from multiagent.export import EXPORTERS, export_agent
+from multiagent.framework_targets import FRAMEWORK_TARGETS, ROUTE_TARGETS, build_framework_plan
 from multiagent.router import AgentRouter
 
 console = Console()
@@ -151,8 +152,8 @@ def recommend(task: str) -> None:
 @click.option("--explain", is_flag=True, help="Show match reasons and routing warnings")
 @click.option(
     "--target",
-    type=click.Choice(list(EXPORTERS)),
-    help="Include export plan for a target",
+    type=click.Choice(list(ROUTE_TARGETS)),
+    help="Include export or framework plan for a target",
 )
 def route(task: str, json_output: bool, explain: bool, target: str | None) -> None:
     """Dry-run route a task to agents without executing them."""
@@ -171,7 +172,14 @@ def route(task: str, json_output: bool, explain: bool, target: str | None) -> No
         )
         if target:
             payload["target"] = target
-            payload["exports"] = _target_export_plan(rec.agents, target)
+            if target in EXPORTERS:
+                payload["exports"] = _target_export_plan(rec.agents, target)
+            else:
+                payload["framework_plan"] = build_framework_plan(
+                    rec.agents,
+                    pattern=rec.pattern,
+                    target=target,
+                )
         click.echo(json.dumps(payload, indent=2))
         return
 
@@ -419,14 +427,73 @@ def eval_cmd(agent_name: str | None, all_agents: bool) -> None:
 
 @main.command(name="eval-routing")
 @click.option("--json", "json_output", is_flag=True, help="Output the report as JSON")
-@click.option("--fail-under", type=float, help="Exit non-zero if pass rate is below this value")
-def eval_routing_cmd(json_output: bool, fail_under: float | None) -> None:
+@click.option(
+    "--fail-under",
+    type=click.FloatRange(0.0, 1.0),
+    help="Exit non-zero if pass rate is below this value",
+)
+@click.option(
+    "--min-agent-score",
+    type=click.FloatRange(0.0, 1.0),
+    help="Exit non-zero if agent match score is below this value",
+)
+@click.option(
+    "--min-pattern-score",
+    type=click.FloatRange(0.0, 1.0),
+    help="Exit non-zero if pattern match score is below this value",
+)
+@click.option(
+    "--min-target-score",
+    type=click.FloatRange(0.0, 1.0),
+    help="Exit non-zero if target match score is below this value",
+)
+@click.option(
+    "--min-forbidden-score",
+    type=click.FloatRange(0.0, 1.0),
+    help="Exit non-zero if forbidden-agent score is below this value",
+)
+@click.option(
+    "--min-risk-score",
+    type=click.FloatRange(0.0, 1.0),
+    help="Exit non-zero if risk expectation score is below this value",
+)
+@click.option(
+    "--min-context-score",
+    type=click.FloatRange(0.0, 1.0),
+    help="Exit non-zero if context expectation score is below this value",
+)
+def eval_routing_cmd(
+    json_output: bool,
+    fail_under: float | None,
+    min_agent_score: float | None,
+    min_pattern_score: float | None,
+    min_target_score: float | None,
+    min_forbidden_score: float | None,
+    min_risk_score: float | None,
+    min_context_score: float | None,
+) -> None:
     """Evaluate router decisions against the built-in task corpus."""
-    from multiagent.routing_eval import evaluate_routing_corpus
+    from multiagent.routing_eval import RoutingEvalThresholds, evaluate_routing_corpus
 
     report = evaluate_routing_corpus(Catalog())
+    thresholds = RoutingEvalThresholds(
+        pass_rate=fail_under,
+        agent_match_rate=min_agent_score,
+        pattern_match_rate=min_pattern_score,
+        target_match_rate=min_target_score,
+        forbidden_match_rate=min_forbidden_score,
+        risk_match_rate=min_risk_score,
+        context_match_rate=min_context_score,
+    )
+    threshold_failures = report.threshold_failures(thresholds)
     if json_output:
-        click.echo(json.dumps(report.to_dict(), indent=2))
+        payload = report.to_dict()
+        if thresholds.configured():
+            payload["thresholds"] = thresholds.configured()
+            payload["threshold_failures"] = [
+                failure.to_dict() for failure in threshold_failures
+            ]
+        click.echo(json.dumps(payload, indent=2))
     else:
         console.print(
             f"\n[bold]Routing eval:[/bold] {report.passed}/{report.total} "
@@ -437,7 +504,9 @@ def eval_routing_cmd(json_output: bool, fail_under: float | None) -> None:
             f"agents {report.scores['agent_match_rate']:.0%}, "
             f"patterns {report.scores['pattern_match_rate']:.0%}, "
             f"targets {report.scores['target_match_rate']:.0%}, "
-            f"forbidden {report.scores['forbidden_match_rate']:.0%}"
+            f"forbidden {report.scores['forbidden_match_rate']:.0%}, "
+            f"risk {report.scores['risk_match_rate']:.0%}, "
+            f"context {report.scores['context_match_rate']:.0%}"
         )
         if report.failures:
             table = Table(show_header=True, header_style="bold red")
@@ -452,9 +521,13 @@ def eval_routing_cmd(json_output: bool, fail_under: float | None) -> None:
                 )
             console.print(table)
 
-    if fail_under is not None and report.pass_rate < fail_under:
+    if threshold_failures:
+        failure_text = ", ".join(
+            f"{failure.metric} {failure.actual:.0%} < {failure.minimum:.0%}"
+            for failure in threshold_failures
+        )
         raise click.ClickException(
-            f"Routing pass rate {report.pass_rate:.0%} is below {fail_under:.0%}"
+            f"Routing eval thresholds failed: {failure_text}"
         )
 
 
@@ -630,19 +703,35 @@ def _print_route_decision(task: str, rec, explain: bool = False, target: str | N
             f"\n[bold]Cheapest estimate:[/bold] {cheapest.model} — "
             f"${cheapest.cost_usd:.4f}/run"
         )
+        review_label = "yes" if rec.risk["requires_human_review"] else "no"
+        console.print(
+            f"[bold]Risk:[/bold] side effects {rec.risk['side_effect_risk']}, "
+            f"human review {review_label}"
+        )
+        console.print(
+            f"[bold]Context:[/bold] {rec.context['estimated_context_tokens']} tokens, "
+            f"{rec.context['context_size_risk']} risk, loading {rec.context['loading']}"
+        )
 
         if target:
             console.print(f"\n[bold]Target:[/bold] {target}")
-            export_table = Table(show_header=True, header_style="bold cyan")
-            export_table.add_column("Agent", style="green")
-            export_table.add_column("Format")
-            export_table.add_column("Command", style="dim")
-            for item in _target_export_plan(rec.agents, target):
-                export_table.add_row(item["agent"], item["format"], item["command"])
-            console.print(export_table)
-            console.print("\n[bold]Export commands:[/bold]")
-            for item in _target_export_plan(rec.agents, target):
-                console.print(f"  {item['command']}")
+            if target in EXPORTERS:
+                export_table = Table(show_header=True, header_style="bold cyan")
+                export_table.add_column("Agent", style="green")
+                export_table.add_column("Format")
+                export_table.add_column("Command", style="dim")
+                for item in _target_export_plan(rec.agents, target):
+                    export_table.add_row(item["agent"], item["format"], item["command"])
+                console.print(export_table)
+                console.print("\n[bold]Export commands:[/bold]")
+                for item in _target_export_plan(rec.agents, target):
+                    console.print(f"  {item['command']}")
+            elif target in FRAMEWORK_TARGETS:
+                plan = build_framework_plan(rec.agents, pattern=rec.pattern, target=target)
+                console.print(f"[bold]Framework plan:[/bold] {plan['format']}")
+                console.print(f"[bold]Helper:[/bold] {plan['helper']}")
+                for note in plan["notes"]:
+                    console.print(f"  - {note}")
     else:
         console.print("[yellow]No matching agents found.[/yellow]")
 

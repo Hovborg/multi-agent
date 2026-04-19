@@ -4,6 +4,18 @@ Use this recipe when you want `multi-agent` to plan how catalog agents should
 map into framework-native orchestration, without importing the optional runtime
 packages yet.
 
+You can get the same plan shape from the CLI:
+
+```bash
+multiagent route "review this PR and write missing tests with OpenAI Agents SDK" \
+  --target openai-agents \
+  --json
+
+multiagent route "research three sources with Google ADK" --target adk --json
+multiagent route "build a deterministic CrewAI review flow" --target crewai-flow --json
+multiagent route "coordinate workers with smolagents" --target smolagents-manager --json
+```
+
 ## Load a small team
 
 ```python

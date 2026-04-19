@@ -129,6 +129,48 @@ protocols:
         assert agent.context["loading"] == "trigger"
         assert agent.protocols["a2a"]["expose"] is True
 
+    def test_high_risk_agents_have_explicit_safety_metadata(self):
+        catalog = Catalog(CATALOG_DIR)
+
+        meeting = catalog.load("personal/meeting-scheduler")
+        assert meeting.safety == {
+            "side_effect_risk": "medium",
+            "requires_human_review": True,
+        }
+
+        infra = catalog.load("devops/infra-provisioner")
+        assert infra.safety == {
+            "side_effect_risk": "high",
+            "requires_human_review": True,
+        }
+
+        ci_cd = catalog.load("devops/ci-cd-agent")
+        assert ci_cd.safety == {
+            "side_effect_risk": "high",
+            "requires_human_review": True,
+        }
+
+        email = catalog.load("personal/email-assistant")
+        assert email.safety == {
+            "side_effect_risk": "medium",
+            "requires_human_review": True,
+        }
+
+        trading = catalog.load("finance/trading-analyst")
+        assert trading.safety == {
+            "side_effect_risk": "medium",
+            "requires_human_review": True,
+        }
+
+    def test_large_context_agents_have_explicit_context_metadata(self):
+        catalog = Catalog(CATALOG_DIR)
+
+        scraper = catalog.load("research/web-scraper")
+        assert scraper.context == {
+            "loading": "progressive",
+            "max_context_tokens": 8192,
+        }
+
 
 class TestCostEstimator:
     def test_estimate_agent(self):

@@ -174,7 +174,25 @@ multiagent route "review this PR and write missing tests" --target codex-config 
 
 # Regression-test the built-in routing corpus
 multiagent eval-routing --json
+
+# CI-friendly score gates; target hints may evolve faster than agent matching
+multiagent eval-routing \
+  --min-agent-score 1.0 \
+  --min-pattern-score 1.0 \
+  --min-target-score 0.95 \
+  --min-forbidden-score 1.0 \
+  --min-risk-score 1.0 \
+  --min-context-score 1.0
+
+# Route directly into a framework-native plan instead of a file export
+multiagent route "review this PR and write missing tests" --target openai-agents --json
+multiagent route "research three sources with Google ADK" --target adk --json
 ```
+
+Route JSON includes `risk` and `context` blocks. Use them to gate side effects,
+human review, and large context loads before turning a dry-run plan into
+execution. See [08 -- Human Review Gates](cookbook/08-human-review-gates.md)
+for a concrete policy example.
 
 ## Agent Catalog
 
@@ -338,6 +356,18 @@ tool_plan = openai_sdk.to_agent_tool_config(reviewer, [test_writer])
 adk_parallel = google_adk.to_workflow_config([reviewer, test_writer], workflow="parallel")
 flow = crewai.to_flow_config([reviewer, test_writer], flow_name="CodeReviewFlow", human_feedback=True)
 manager = smolagents.to_manager_config(reviewer, [test_writer])
+```
+
+The router can also emit framework-native dry-run plans directly:
+
+```bash
+multiagent route "review this PR and write missing tests with OpenAI Agents SDK" \
+  --target openai-agents \
+  --json
+
+multiagent route "research three sources with Google ADK" --target adk --json
+multiagent route "build a deterministic CrewAI review flow" --target crewai-flow --json
+multiagent route "coordinate workers with smolagents" --target smolagents-manager --json
 ```
 
 Don't see your framework? [Submit an adapter](CONTRIBUTING.md#adding-an-adapter).

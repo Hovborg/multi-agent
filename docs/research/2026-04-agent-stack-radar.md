@@ -158,25 +158,27 @@ Udført 2026-04-19 som kompatibilitetslag: `AgentDefinition` kan nu læse disse 
 
 ### P3 - Gør routeren framework-aware
 
-Udført 2026-04-19 for eksisterende export targets:
+Udført 2026-04-19 for export targets:
 
 - `multiagent route "..." --target codex-config`
 - `multiagent route "..." --target a2a-agent-card`
 
-Stadig åbent for adapter-targets der ikke er exportere endnu:
+Udført 2026-04-19 for framework-template targets:
 
-- `multiagent route "..." --target claude-subagent`
 - `multiagent route "..." --target openai-agents`
 - `multiagent route "..." --target adk`
+- `multiagent route "..." --target crewai-flow`
+- `multiagent route "..." --target smolagents-manager`
 
-Routeren bør klassificere:
+Udført 2026-04-19 for route metadata:
 
-- single specialist vs multi-agent
-- handoff vs agents-as-tools
-- parallel vs sequential
 - side-effect risk
 - human approval needed
 - context size risk
+
+Udført 2026-04-19 for eval gates:
+
+- risk/context scores kan evalueres i corpus og CI
 
 ### P4 - Adapter upgrades
 
@@ -226,11 +228,21 @@ smolagents:
 
 1. Done: Adapter-specific template helpers for OpenAI handoffs/as_tool, ADK sequential/parallel, CrewAI Flow og smolagents manager.
 2. Done: Routing eval corpus med 43 task prompts og forventet agent/pattern/target.
-3. Done: Routing eval kører som CI-gate med `multiagent eval-routing --fail-under 1.0`.
+3. Done: Routing eval kører som CI-gate med score-specifikke thresholds:
+   `--min-agent-score 1.0`, `--min-pattern-score 1.0`, `--min-target-score 0.95`,
+   `--min-forbidden-score 1.0`, `--min-risk-score 1.0`, `--min-context-score 1.0`.
 4. Done: Corpus dækker danske/flersprogede prompts og uklare target-hints.
 5. Done: Negative eval cases dækker tasks, der eksplicit fravælger en specialist.
 6. Done: Routing metrics er splittet i agent, pattern, target og forbidden-agent delscorer.
-7. Næste: Tilføj weighted score thresholds, så CI kan tillade lavere target-score end agent-score.
+7. Done: Score-specifikke routing thresholds gør, at CI kan tillade lavere target-score end agent-score.
+8. Done: Adapter-target routing for `openai-agents`, `adk`, `crewai-flow` og `smolagents-manager`.
+9. Done: Risk/context scoring i route-output markerer side effects, human review og store context loads.
+10. Done: Routing corpus kan teste forventet risk/context via optional `expected_risk` og `expected_context`.
+11. Done: Udvalgte high-risk/high-context agenter har explicit YAML metadata:
+    `personal/meeting-scheduler`, `personal/email-assistant`, `devops/infra-provisioner`,
+    `devops/ci-cd-agent`, `finance/trading-analyst`, `research/web-scraper`.
+12. Done: Cookbook `08-human-review-gates.md` viser human-review gates for OpenClaw/Codex workflows.
+13. Næste: Byg eventuel actual runtime integration kun efter separat designbeslutning.
 
 ## Beslutning
 

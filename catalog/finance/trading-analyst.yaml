@@ -56,6 +56,10 @@ parameters:
   temperature: 0.2
   max_tokens: 6144
 
+safety:
+  side_effect_risk: medium
+  requires_human_review: true
+
 cost_profile:
   input_tokens_per_run: 5000
   output_tokens_per_run: 4000

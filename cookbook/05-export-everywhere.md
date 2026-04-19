@@ -103,6 +103,18 @@ multiagent route "review this PR and write missing tests" --target a2a-agent-car
 multiagent route "review this PR and write missing tests" --target codex-config --json
 ```
 
+For CI, gate the scores that matter independently:
+
+```bash
+multiagent eval-routing \
+  --min-agent-score 1.0 \
+  --min-pattern-score 1.0 \
+  --min-target-score 0.95 \
+  --min-forbidden-score 1.0 \
+  --min-risk-score 1.0 \
+  --min-context-score 1.0
+```
+
 ## Bulk export for a whole category
 
 Export every agent in the `code` category to Claude Code in one command:
