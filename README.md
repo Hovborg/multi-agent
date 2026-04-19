@@ -523,9 +523,11 @@ graph TB
 - [x] CrewAI, LangGraph, OpenAI adapters
 - [x] Claude SDK, Google ADK adapters
 - [x] Cost estimation engine
-- [x] CLI tool (`multiagent search`, `multiagent info`, `multiagent compose`)
-- [ ] Agent evaluation framework (benchmarks per pattern)
-- [ ] Visual agent composer (web UI)
+- [x] CLI tool (`multiagent search`, `multiagent info`, `multiagent build`, `multiagent route`)
+- [x] Agent evaluation CLI and routing corpus gates
+- [x] Static playground, catalog browser, and composition visualizer
+- [x] Dry-run governance metadata and human-review gates
+- [ ] Benchmarks per orchestration pattern
 - [ ] Shared team memory integration
 - [ ] Agent marketplace (community submissions)
 - [ ] AG-UI protocol support
