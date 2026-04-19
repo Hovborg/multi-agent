@@ -446,6 +446,12 @@ Browse agents, test enhancements, compare costs, and build teams visually — al
 - **Cost Calculator** — Compare costs across 13 models with monthly estimates
 - **Composition Visualizer** — Build teams and auto-generate Mermaid diagrams
 
+Regenerate the static browser data after catalog changes:
+
+```bash
+multiagent generate-web-data --output web/catalog-data.js
+```
+
 ## Cost Estimation
 
 Every agent in the catalog includes cost profiles. Know what you'll spend before you run:

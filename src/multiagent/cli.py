@@ -360,6 +360,23 @@ def enhancements() -> None:
     console.print(table)
 
 
+@main.command(name="generate-web-data")
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(),
+    default="web/catalog-data.js",
+    show_default=True,
+    help="Output JavaScript file",
+)
+def generate_web_data(output: str) -> None:
+    """Regenerate the static web playground catalog data."""
+    from multiagent.web_data import write_catalog_data_js
+
+    path = write_catalog_data_js(output, catalog=Catalog())
+    console.print(f"[green]Wrote {path}[/green]")
+
+
 @main.command()
 @click.argument("agent_names", nargs=-1, required=True)
 @click.option(

@@ -77,3 +77,15 @@ def test_auto_routes_prompt_then_exits():
     assert "Multi-Agent Auto Router" in result.output
     assert "code/code-reviewer" in result.output
     assert "content/writer" not in result.output
+
+
+def test_generate_web_data_cli_writes_static_catalog(tmp_path):
+    output = tmp_path / "catalog-data.js"
+
+    result = CliRunner().invoke(main, ["generate-web-data", "--output", str(output)])
+
+    assert result.exit_code == 0
+    content = output.read_text(encoding="utf-8")
+    assert content.startswith("const CATALOG_DATA = ")
+    assert '"full_name": "personal/meeting-scheduler"' in content
+    assert '"safety": {' in content

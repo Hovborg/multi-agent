@@ -2,6 +2,7 @@ const CATALOG_DATA = {
   "agents": [
     {
       "name": "code-generator",
+      "version": "1.0",
       "full_name": "code/code-generator",
       "category": "code",
       "description": "Generates production-quality code from specifications or natural language descriptions",
@@ -63,6 +64,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "code-reviewer",
+      "version": "1.0",
       "full_name": "code/code-reviewer",
       "category": "code",
       "description": "Reviews code changes for bugs, security vulnerabilities, and style violations",
@@ -131,6 +133,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "debugger",
+      "version": "1.0",
       "full_name": "code/debugger",
       "category": "code",
       "description": "Diagnoses and fixes bugs using systematic root cause analysis",
@@ -209,6 +212,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "documentation-writer",
+      "version": "1.0",
       "full_name": "code/documentation-writer",
       "category": "code",
       "description": "Generates API docs, READMEs, changelogs, and inline documentation from code",
@@ -284,6 +288,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "pr-summarizer",
+      "version": "1.0",
       "full_name": "code/pr-summarizer",
       "category": "code",
       "description": "Generates clear, structured PR descriptions from diffs and commit history",
@@ -356,6 +361,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "refactorer",
+      "version": "1.0",
       "full_name": "code/refactorer",
       "category": "code",
       "description": "Identifies and applies code improvements while preserving behavior",
@@ -428,6 +434,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "security-auditor",
+      "version": "1.0",
       "full_name": "code/security-auditor",
       "category": "code",
       "description": "Scans code for security vulnerabilities, OWASP issues, exposed secrets, and CVEs",
@@ -502,6 +509,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "test-writer",
+      "version": "1.0",
       "full_name": "code/test-writer",
       "category": "code",
       "description": "Generates comprehensive test suites for existing or new code",
@@ -563,6 +571,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "editor",
+      "version": "1.0",
       "full_name": "content/editor",
       "category": "content",
       "description": "Proofreads and edits for grammar, clarity, tone consistency, and style guide compliance",
@@ -639,6 +648,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "seo-optimizer",
+      "version": "1.0",
       "full_name": "content/seo-optimizer",
       "category": "content",
       "description": "Analyzes and optimizes content for search engine visibility and organic traffic",
@@ -713,6 +723,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "translator",
+      "version": "1.0",
       "full_name": "content/translator",
       "category": "content",
       "description": "Translates content across languages with cultural adaptation and context preservation",
@@ -786,6 +797,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "writer",
+      "version": "1.0",
       "full_name": "content/writer",
       "category": "content",
       "description": "Creates long-form content including articles, blog posts, guides, and thought leadership",
@@ -861,6 +873,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "data-analyst",
+      "version": "1.0",
       "full_name": "data/data-analyst",
       "category": "data",
       "description": "Performs data analysis with statistical methods, visualization recommendations, and insight extraction",
@@ -931,6 +944,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "report-writer",
+      "version": "1.0",
       "full_name": "data/report-writer",
       "category": "data",
       "description": "Generates structured reports with executive summaries, charts, and actionable recommendations",
@@ -1006,6 +1020,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "sql-generator",
+      "version": "1.0",
       "full_name": "data/sql-generator",
       "category": "data",
       "description": "Converts natural language questions to optimized SQL queries with schema awareness",
@@ -1079,6 +1094,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "ci-cd-agent",
+      "version": "1.0",
       "full_name": "devops/ci-cd-agent",
       "category": "devops",
       "description": "Creates and optimizes CI/CD pipelines for GitHub Actions, GitLab CI, and other platforms",
@@ -1150,10 +1166,15 @@ const CATALOG_DATA = {
           "claude-haiku-4-5": 0.005,
           "claude-sonnet-4-6": 0.05
         }
+      },
+      "safety": {
+        "side_effect_risk": "high",
+        "requires_human_review": true
       }
     },
     {
       "name": "incident-responder",
+      "version": "1.0",
       "full_name": "devops/incident-responder",
       "category": "devops",
       "description": "Automates incident triage, diagnosis, communication, and post-incident review",
@@ -1234,6 +1255,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "infra-provisioner",
+      "version": "1.0",
       "full_name": "devops/infra-provisioner",
       "category": "devops",
       "description": "Generates Infrastructure as Code using Terraform, CloudFormation, Pulumi, or Docker Compose",
@@ -1304,10 +1326,15 @@ const CATALOG_DATA = {
           "claude-haiku-4-5": 0.005,
           "claude-sonnet-4-6": 0.055
         }
+      },
+      "safety": {
+        "side_effect_risk": "high",
+        "requires_human_review": true
       }
     },
     {
       "name": "monitoring-agent",
+      "version": "1.0",
       "full_name": "devops/monitoring-agent",
       "category": "devops",
       "description": "Sets up monitoring, alerting, dashboards, and SLO tracking for production systems",
@@ -1384,6 +1411,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "financial-reporter",
+      "version": "1.0",
       "full_name": "finance/financial-reporter",
       "category": "finance",
       "description": "Generates financial reports, earnings summaries, investor updates, and performance dashboards",
@@ -1459,6 +1487,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "fraud-detector",
+      "version": "1.0",
       "full_name": "finance/fraud-detector",
       "category": "finance",
       "description": "Identifies suspicious transactions, fraudulent patterns, and financial anomalies",
@@ -1535,6 +1564,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "portfolio-optimizer",
+      "version": "1.0",
       "full_name": "finance/portfolio-optimizer",
       "category": "finance",
       "description": "Optimizes portfolio allocation, assesses risk exposure, and generates rebalancing recommendations",
@@ -1611,6 +1641,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "tax-advisor",
+      "version": "1.0",
       "full_name": "finance/tax-advisor",
       "category": "finance",
       "description": "Provides tax planning guidance, deduction identification, and compliance checking",
@@ -1687,6 +1718,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "trading-analyst",
+      "version": "1.0",
       "full_name": "finance/trading-analyst",
       "category": "finance",
       "description": "Analyzes market data, identifies trends, and generates trading signals with risk assessments",
@@ -1759,10 +1791,15 @@ const CATALOG_DATA = {
           "claude-haiku-4-5": 0.006,
           "claude-sonnet-4-6": 0.06
         }
+      },
+      "safety": {
+        "side_effect_risk": "medium",
+        "requires_human_review": true
       }
     },
     {
       "name": "compliance-checker",
+      "version": "1.0",
       "full_name": "legal/compliance-checker",
       "category": "legal",
       "description": "Checks documents, processes, and systems against regulatory requirements and internal policies",
@@ -1841,6 +1878,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "contract-reviewer",
+      "version": "1.0",
       "full_name": "legal/contract-reviewer",
       "category": "legal",
       "description": "Reviews contracts for risks, missing clauses, unfavorable terms, and compliance issues",
@@ -1917,6 +1955,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "document-drafter",
+      "version": "1.0",
       "full_name": "legal/document-drafter",
       "category": "legal",
       "description": "Drafts legal documents including NDAs, terms of service, privacy policies, and contracts",
@@ -1993,6 +2032,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "legal-researcher",
+      "version": "1.0",
       "full_name": "legal/legal-researcher",
       "category": "legal",
       "description": "Researches case law, regulations, legal precedents, and statutory requirements",
@@ -2069,6 +2109,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "cost-optimizer",
+      "version": "1.0",
       "full_name": "orchestration/cost-optimizer",
       "category": "orchestration",
       "description": "Selects the cheapest capable model for each sub-task to minimize total workflow cost",
@@ -2142,6 +2183,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "quality-gate",
+      "version": "1.0",
       "full_name": "orchestration/quality-gate",
       "category": "orchestration",
       "description": "Validates agent output against quality criteria before passing to downstream agents or users",
@@ -2217,6 +2259,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "task-router",
+      "version": "1.0",
       "full_name": "orchestration/task-router",
       "category": "orchestration",
       "description": "Meta-agent that analyzes tasks and routes them to the most appropriate specialist agents",
@@ -2293,6 +2336,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "email-assistant",
+      "version": "1.0",
       "full_name": "personal/email-assistant",
       "category": "personal",
       "description": "Manages email triage, drafts contextual replies, and schedules follow-ups",
@@ -2365,10 +2409,15 @@ const CATALOG_DATA = {
           "claude-haiku-4-5": 0.003,
           "claude-sonnet-4-6": 0.028
         }
+      },
+      "safety": {
+        "side_effect_risk": "medium",
+        "requires_human_review": true
       }
     },
     {
       "name": "meeting-scheduler",
+      "version": "1.0",
       "full_name": "personal/meeting-scheduler",
       "category": "personal",
       "description": "Manages calendar, coordinates meeting times across participants, and handles time zone complexities",
@@ -2441,10 +2490,15 @@ const CATALOG_DATA = {
           "claude-haiku-4-5": 0.003,
           "claude-sonnet-4-6": 0.025
         }
+      },
+      "safety": {
+        "side_effect_risk": "medium",
+        "requires_human_review": true
       }
     },
     {
       "name": "note-taker",
+      "version": "1.0",
       "full_name": "personal/note-taker",
       "category": "personal",
       "description": "Transcribes meetings, extracts action items, and generates structured summaries",
@@ -2519,6 +2573,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "task-manager",
+      "version": "1.0",
       "full_name": "personal/task-manager",
       "category": "personal",
       "description": "Prioritizes personal tasks, tracks deadlines, and generates actionable daily plans",
@@ -2593,6 +2648,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "competitive-intel",
+      "version": "1.0",
       "full_name": "research/competitive-intel",
       "category": "research",
       "description": "Conducts competitive analysis, market research, and industry trend assessment",
@@ -2667,6 +2723,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "deep-researcher",
+      "version": "1.0",
       "full_name": "research/deep-researcher",
       "category": "research",
       "description": "Conducts multi-step web research with source synthesis and citation tracking",
@@ -2742,6 +2799,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "fact-checker",
+      "version": "1.0",
       "full_name": "research/fact-checker",
       "category": "research",
       "description": "Verifies claims against multiple independent sources and rates confidence",
@@ -2811,6 +2869,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "paper-analyst",
+      "version": "1.0",
       "full_name": "research/paper-analyst",
       "category": "research",
       "description": "Analyzes academic papers, extracts key findings, methods, and implications",
@@ -2885,6 +2944,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "web-scraper",
+      "version": "1.0",
       "full_name": "research/web-scraper",
       "category": "research",
       "description": "Extracts structured data from web pages with schema validation",
@@ -2953,10 +3013,15 @@ const CATALOG_DATA = {
           "claude-haiku-4-5": 0.006,
           "claude-sonnet-4-6": 0.065
         }
+      },
+      "context": {
+        "loading": "progressive",
+        "max_context_tokens": 8192
       }
     },
     {
       "name": "access-reviewer",
+      "version": "1.0",
       "full_name": "security/access-reviewer",
       "category": "security",
       "description": "Reviews access permissions, identifies over-privileged accounts, and enforces least-privilege principles",
@@ -3031,6 +3096,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "incident-analyst",
+      "version": "1.0",
       "full_name": "security/incident-analyst",
       "category": "security",
       "description": "Performs forensic analysis of security incidents, reconstructs attack timelines, and guides response",
@@ -3105,6 +3171,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "log-analyzer",
+      "version": "1.0",
       "full_name": "security/log-analyzer",
       "category": "security",
       "description": "Analyzes security logs for suspicious activity, anomalies, and indicators of compromise",
@@ -3179,6 +3246,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "vulnerability-scanner",
+      "version": "1.0",
       "full_name": "security/vulnerability-scanner",
       "category": "security",
       "description": "Scans infrastructure for known vulnerabilities, misconfigurations, and security weaknesses",
@@ -3253,6 +3321,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "customer-support",
+      "version": "1.0",
       "full_name": "support/customer-support",
       "category": "support",
       "description": "Handles customer inquiries, troubleshooting, and issue resolution with empathetic communication",
@@ -3328,6 +3397,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "escalation-agent",
+      "version": "1.0",
       "full_name": "support/escalation-agent",
       "category": "support",
       "description": "Determines when and how to escalate support issues to human agents or specialized teams",
@@ -3404,6 +3474,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "knowledge-base-builder",
+      "version": "1.0",
       "full_name": "support/knowledge-base-builder",
       "category": "support",
       "description": "Creates and maintains FAQ and help documentation from resolved support tickets and product changes",
@@ -3480,6 +3551,7 @@ const CATALOG_DATA = {
     },
     {
       "name": "ticket-router",
+      "version": "1.0",
       "full_name": "support/ticket-router",
       "category": "support",
       "description": "Classifies and routes support tickets to appropriate teams based on content, urgency, and expertise required",
@@ -3682,23 +3754,23 @@ const CATALOG_DATA = {
     ]
   },
   "enhancements": {
-    "reasoning": "<reasoning>\nBefore each action, plan your approach. After each result, reflect on whether\nit matches expectations. If not, adjust your strategy before proceeding.\n\nKeep going until the task is completely resolved. Do not stop at partial results.\n\nIf you are not sure about something, use your tools to investigate \u2014 do NOT\nguess or make up an answer.\n</reasoning>",
-    "error_recovery": "<error_recovery>\nWhen something fails, follow this hierarchy:\nLEVEL 0 \u2014 RETRY: Same call, wait briefly (transient errors like timeouts)\nLEVEL 1 \u2014 REPHRASE: Same intent, different parameters or query\nLEVEL 2 \u2014 REROUTE: Try an alternative tool or data source\nLEVEL 3 \u2014 REPLAN: Abandon current approach, design a new strategy\nLEVEL 4 \u2014 ESCALATE: Report what failed and why, request human guidance\n\nNever give up after a single failure. Never make up results when a tool fails.\n</error_recovery>",
-    "verification": "<verification>\nBefore finalizing your response, verify:\n1. Does the output actually address the stated task?\n2. Is every claim backed by evidence or tool results?\n3. Are all requested items covered, or explicitly noted as blocked?\n4. Does the output format match what was requested?\n5. Are there contradictions or assumptions that need flagging?\n\nIf any check fails, fix the issue before responding.\n</verification>",
     "confidence": "<confidence>\nBe calibrated in your confidence:\n- When confident, state conclusions directly\n- When uncertain, say so and offer alternatives\n- When you don't know, say \"I don't know\" rather than guessing\n- Distinguish between facts from tools/sources and your own inferences\n</confidence>",
-    "tool_discipline": "<tool_discipline>\nTool selection rules (priority order):\n1. Read local/cached data before searching externally\n2. Use the most specific tool available for the task\n3. Batch independent operations \u2014 call multiple tools in parallel when possible\n4. Never use destructive tools during analysis/read-only phases\n5. Validate tool results before building on them\n</tool_discipline>",
-    "failure_modes": "<failure_modes>\nPatterns to avoid:\n- Agreeing when you should push back on incorrect assumptions\n- Assuming context you don't have instead of investigating\n- Over-engineering simple problems or under-engineering complex ones\n- Stopping at analysis when implementation was requested\n- Producing plausible-sounding output without factual backing\n- Hard-coding values that only work for one specific case\n</failure_modes>",
     "context_management": "<context_management>\nManage your working context actively:\nKEEP: Current goal, success criteria, completed steps, key findings\nSUMMARIZE: Replace raw data with concise summaries after processing\nDISCARD: Full tool outputs once relevant parts are captured\n\nWork on one task at a time. Complete it fully before moving to the next.\nIf context grows large, periodically summarize progress.\n</context_management>",
-    "information_priority": "<information_priority>\nTrust information in this order:\n1. Direct tool results and verified data (highest trust)\n2. User-provided context and requirements\n3. External search results with citations\n4. Your own knowledge (lowest trust \u2014 verify when possible)\n\nWhen sources conflict, prefer higher-trust sources and flag the discrepancy.\n</information_priority>"
+    "error_recovery": "<error_recovery>\nWhen something fails, follow this hierarchy:\nLEVEL 0 \u2014 RETRY: Same call, wait briefly (transient errors like timeouts)\nLEVEL 1 \u2014 REPHRASE: Same intent, different parameters or query\nLEVEL 2 \u2014 REROUTE: Try an alternative tool or data source\nLEVEL 3 \u2014 REPLAN: Abandon current approach, design a new strategy\nLEVEL 4 \u2014 ESCALATE: Report what failed and why, request human guidance\n\nNever give up after a single failure. Never make up results when a tool fails.\n</error_recovery>",
+    "failure_modes": "<failure_modes>\nPatterns to avoid:\n- Agreeing when you should push back on incorrect assumptions\n- Assuming context you don't have instead of investigating\n- Over-engineering simple problems or under-engineering complex ones\n- Stopping at analysis when implementation was requested\n- Producing plausible-sounding output without factual backing\n- Hard-coding values that only work for one specific case\n</failure_modes>",
+    "information_priority": "<information_priority>\nTrust information in this order:\n1. Direct tool results and verified data (highest trust)\n2. User-provided context and requirements\n3. External search results with citations\n4. Your own knowledge (lowest trust \u2014 verify when possible)\n\nWhen sources conflict, prefer higher-trust sources and flag the discrepancy.\n</information_priority>",
+    "reasoning": "<reasoning>\nBefore each action, plan your approach. After each result, reflect on whether\nit matches expectations. If not, adjust your strategy before proceeding.\n\nKeep going until the task is completely resolved. Do not stop at partial results.\n\nIf you are not sure about something, use your tools to investigate \u2014 do NOT\nguess or make up an answer.\n</reasoning>",
+    "tool_discipline": "<tool_discipline>\nTool selection rules (priority order):\n1. Read local/cached data before searching externally\n2. Use the most specific tool available for the task\n3. Batch independent operations \u2014 call multiple tools in parallel when possible\n4. Never use destructive tools during analysis/read-only phases\n5. Validate tool results before building on them\n</tool_discipline>",
+    "verification": "<verification>\nBefore finalizing your response, verify:\n1. Does the output actually address the stated task?\n2. Is every claim backed by evidence or tool results?\n3. Are all requested items covered, or explicitly noted as blocked?\n4. Does the output format match what was requested?\n5. Are there contradictions or assumptions that need flagging?\n\nIf any check fails, fix the issue before responding.\n</verification>"
   },
   "enhancement_names": [
-    "reasoning",
-    "error_recovery",
-    "verification",
     "confidence",
-    "tool_discipline",
-    "failure_modes",
     "context_management",
-    "information_priority"
+    "error_recovery",
+    "failure_modes",
+    "information_priority",
+    "reasoning",
+    "tool_discipline",
+    "verification"
   ]
 };
