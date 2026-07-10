@@ -2,10 +2,9 @@
 
 from pathlib import Path
 
-from multiagent.catalog import Catalog
+from multiagent.catalog import CATALOG_DIR, Catalog
 from multiagent.web_data import build_web_catalog_data, render_catalog_data_js
 
-CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
 WEB_DATA_PATH = Path(__file__).resolve().parent.parent / "web" / "catalog-data.js"
 
 

@@ -1,7 +1,6 @@
 """Tests for the export module."""
 
 import json
-from pathlib import Path
 
 import pytest
 
@@ -10,7 +9,7 @@ try:
 except ModuleNotFoundError:  # Python 3.10
     import tomli as tomllib
 
-from multiagent.catalog import Catalog
+from multiagent.catalog import CATALOG_DIR, Catalog
 from multiagent.export import (
     EXPORTERS,
     export_agent,
@@ -24,12 +23,18 @@ from multiagent.export import (
     to_raw,
 )
 
-CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
-
 
 @pytest.fixture
 def catalog():
     return Catalog(CATALOG_DIR)
+
+
+def test_export_rejects_unsafe_programmatic_agent_name(catalog, tmp_path):
+    agent = catalog.load("code/code-reviewer")
+    agent.name = "../escape"
+
+    with pytest.raises(ValueError, match="safe slug"):
+        export_agent(agent, "raw", tmp_path)
 
 
 @pytest.fixture

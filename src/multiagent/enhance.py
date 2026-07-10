@@ -11,7 +11,7 @@ Based on findings from Anthropic, OpenAI, and academic research (2025-2026):
 - Active context management
 - Information priority hierarchies
 
-Enhancements are composable YAML blocks in catalog/_enhancements/.
+Enhancements are composable YAML blocks in the packaged catalog_data/_enhancements/ directory.
 """
 
 from __future__ import annotations
@@ -21,9 +21,9 @@ from typing import Any
 
 import yaml
 
-from multiagent.catalog import AgentDefinition
+from multiagent.catalog import CATALOG_DIR, AgentDefinition
 
-ENHANCEMENTS_DIR = Path(__file__).resolve().parent.parent.parent / "catalog" / "_enhancements"
+ENHANCEMENTS_DIR = CATALOG_DIR / "_enhancements"
 
 # Default enhancement profiles per category
 CATEGORY_PROFILES: dict[str, list[str]] = {

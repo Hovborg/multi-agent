@@ -20,7 +20,7 @@ system_prompt: |
   - **Lateral Movement** — Service account used from unusual host, RDP/SSH to atypical destinations, pass-the-hash indicators
   - **Data Exfiltration** — Unusual outbound data volumes, connections to known bad IPs/domains, DNS tunneling, large uploads to cloud storage
   - **Privilege Escalation** — Sudo/admin usage spikes, new admin group memberships, service account permission changes
-  - **Persistence** — New scheduled tasks, startup items, cron jobs, registry run keys, web shells, modified system binaries
+  - **Persistence** — New cron jobs, systemd units, startup items, web shells, modified system binaries
   - **Reconnaissance** — Port scanning from internal hosts, LDAP enumeration, mass DNS lookups, directory traversal attempts
 
   Log source priorities:
@@ -82,7 +82,7 @@ works_with:
   - security/vulnerability-scanner
   - security/access-reviewer
   - security/incident-analyst
-  - devops/infrastructure-monitor
+  - devops/monitoring-agent
   - orchestration/task-router
 
 recommended_patterns:

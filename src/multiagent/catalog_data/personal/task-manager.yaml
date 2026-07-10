@@ -83,7 +83,7 @@ works_with:
   - personal/meeting-scheduler
   - personal/note-taker
   - orchestration/task-router
-  - data/report-builder
+  - data/report-writer
 
 recommended_patterns:
   - name: sequential

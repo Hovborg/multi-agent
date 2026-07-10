@@ -241,6 +241,7 @@ class Recommendation:
     target_reason: str = "Default local Codex/OpenClaw project config"
     risk: dict[str, Any] = field(default_factory=dict)
     context: dict[str, Any] = field(default_factory=dict)
+    policy: dict[str, Any] = field(default_factory=dict)
 
     def describe(self) -> str:
         lines = [
@@ -277,6 +278,7 @@ class Recommendation:
             "target_reason": self.target_reason,
             "risk": self.risk,
             "context": self.context,
+            "policy": self.policy,
         }
 
 
@@ -382,6 +384,7 @@ class AgentRouter:
         suggested_target, target_reason = self.recommend_target(task)
         risk = _assess_risk(agents)
         context = _assess_context(agents)
+        policy = _build_orchestration_policy(agents, pattern, risk, context)
         if risk["requires_human_review"]:
             warnings.append("Human review recommended before side-effect execution.")
         if context["context_size_risk"] == "high":
@@ -399,6 +402,7 @@ class AgentRouter:
             target_reason=target_reason,
             risk=risk,
             context=context,
+            policy=policy,
         )
 
     def recommend_target(self, task: str) -> tuple[str, str]:
@@ -526,4 +530,61 @@ def _assess_context(agents: list[AgentDefinition]) -> dict[str, Any]:
         "estimated_context_tokens": estimated_tokens,
         "context_size_risk": context_size_risk,
         "reasons": reasons,
+    }
+
+
+def _build_orchestration_policy(
+    agents: list[AgentDefinition],
+    pattern: str,
+    risk: dict[str, Any],
+    context: dict[str, Any],
+) -> dict[str, Any]:
+    """Derive bounded, runtime-neutral execution guidance for a route."""
+    if not agents:
+        control_mode = "router"
+    elif pattern == "handoff":
+        control_mode = "handoff"
+    elif pattern in {"supervisor-worker", "reflection", "group-chat"}:
+        control_mode = "manager"
+    else:
+        control_mode = "router"
+
+    parallelizable = bool(agents) and pattern in {"parallel", "split-and-merge"}
+    if not agents:
+        max_delegates = 0
+    elif parallelizable:
+        max_delegates = min(5, max(2, len(agents)))
+    else:
+        max_delegates = 1
+
+    trust_boundary = ["user_input", "tool_output", "delegated_output"]
+    approval_required = bool(risk.get("requires_human_review")) or risk.get(
+        "side_effect_risk"
+    ) in {"medium", "high"}
+    if approval_required:
+        trust_boundary.append("external_side_effects")
+
+    stop_conditions = [
+        "no_agents_matched" if not agents else "sufficient_evidence",
+        "delegation_budget_exhausted",
+        "context_budget_exhausted",
+        "human_review_required",
+    ]
+    if context.get("context_size_risk") == "high":
+        stop_conditions.insert(1, "summarize_before_continuing")
+
+    return {
+        "control_mode": control_mode,
+        "parallelizable": parallelizable,
+        "max_delegates": max_delegates,
+        "delegation_contract": {
+            "objective": "A bounded outcome with explicit success criteria.",
+            "output_format": "A structured result suitable for the coordinator.",
+            "allowed_tools": "Only tools required for the delegated objective.",
+            "source_requirements": "Return provenance for factual or external claims.",
+            "stop_conditions": "Stop when complete, blocked, unsafe, or over budget.",
+        },
+        "trust_boundary": trust_boundary,
+        "approval_required": approval_required,
+        "stop_conditions": stop_conditions,
     }

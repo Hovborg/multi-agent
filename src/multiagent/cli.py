@@ -65,9 +65,8 @@ def info(name: str) -> None:
     catalog = Catalog()
     try:
         agent = catalog.load(name)
-    except KeyError as e:
-        console.print(f"[red]{e}[/red]")
-        return
+    except KeyError as error:
+        raise click.ClickException(str(error)) from error
 
     console.print(f"\n[bold green]{agent.full_name}[/bold green] v{agent.version}")
     console.print(f"[dim]{agent.description}[/dim]\n")
@@ -250,9 +249,8 @@ def export(agent_name: str, target: str, output: str | None) -> None:
     catalog = Catalog()
     try:
         agent = catalog.load(agent_name)
-    except KeyError as e:
-        console.print(f"[red]{e}[/red]")
-        return
+    except KeyError as error:
+        raise click.ClickException(str(error)) from error
 
     from pathlib import Path
 
@@ -323,9 +321,8 @@ def enhance(agent_name: str, profile: str, target: str | None, output: str | Non
     catalog = Catalog()
     try:
         agent = catalog.load(agent_name)
-    except KeyError as e:
-        console.print(f"[red]{e}[/red]")
-        return
+    except KeyError as error:
+        raise click.ClickException(str(error)) from error
 
     enhanced = enhance_agent(agent, profile=profile)
 
@@ -358,6 +355,16 @@ def enhancements() -> None:
         table.add_row(e["name"], e["category"], e["description"])
 
     console.print(table)
+
+
+@main.command(name="validate")
+def validate_catalog() -> None:
+    """Validate bundled agent definitions and cross-agent references."""
+    catalog = Catalog()
+    errors = catalog.validate()
+    if errors:
+        raise click.ClickException("Catalog validation failed:\n" + "\n".join(errors))
+    console.print(f"[green]Catalog valid: {len(catalog)} agents[/green]")
 
 
 @main.command(name="generate-web-data")
@@ -399,9 +406,8 @@ def visualize(agent_names: tuple[str, ...], pattern: str) -> None:
     for name in agent_names:
         try:
             agents.append(catalog.load(name))
-        except KeyError as e:
-            console.print(f"[red]{e}[/red]")
-            return
+        except KeyError as error:
+            raise click.ClickException(str(error)) from error
 
     diagram = visualize_team(agents, pattern)
     console.print(f"\n[bold]Pattern:[/bold] {pattern}")
@@ -435,9 +441,8 @@ def eval_cmd(agent_name: str | None, all_agents: bool) -> None:
     else:
         try:
             agent = catalog.load(agent_name)
-        except KeyError as e:
-            console.print(f"[red]{e}[/red]")
-            return
+        except KeyError as error:
+            raise click.ClickException(str(error)) from error
         score = evaluate_agent(agent)
         console.print(f"\n{score}")
 
@@ -479,6 +484,11 @@ def eval_cmd(agent_name: str | None, all_agents: bool) -> None:
     type=click.FloatRange(0.0, 1.0),
     help="Exit non-zero if context expectation score is below this value",
 )
+@click.option(
+    "--min-policy-score",
+    type=click.FloatRange(0.0, 1.0),
+    help="Exit non-zero if orchestration policy score is below this value",
+)
 def eval_routing_cmd(
     json_output: bool,
     fail_under: float | None,
@@ -488,6 +498,7 @@ def eval_routing_cmd(
     min_forbidden_score: float | None,
     min_risk_score: float | None,
     min_context_score: float | None,
+    min_policy_score: float | None,
 ) -> None:
     """Evaluate router decisions against the built-in task corpus."""
     from multiagent.routing_eval import RoutingEvalThresholds, evaluate_routing_corpus
@@ -501,6 +512,7 @@ def eval_routing_cmd(
         forbidden_match_rate=min_forbidden_score,
         risk_match_rate=min_risk_score,
         context_match_rate=min_context_score,
+        policy_match_rate=min_policy_score,
     )
     threshold_failures = report.threshold_failures(thresholds)
     if json_output:
@@ -524,6 +536,7 @@ def eval_routing_cmd(
             f"forbidden {report.scores['forbidden_match_rate']:.0%}, "
             f"risk {report.scores['risk_match_rate']:.0%}, "
             f"context {report.scores['context_match_rate']:.0%}"
+            f", policy {report.scores['policy_match_rate']:.0%}"
         )
         if report.failures:
             table = Table(show_header=True, header_style="bold red")

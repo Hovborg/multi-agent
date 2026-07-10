@@ -1,16 +1,13 @@
 """Tests for framework-native route targets."""
 
 import json
-from pathlib import Path
 
 from click.testing import CliRunner
 
-from multiagent.catalog import Catalog
+from multiagent.catalog import CATALOG_DIR, Catalog
 from multiagent.cli import main
 from multiagent.framework_targets import build_framework_plan
 from multiagent.router import AgentRouter
-
-CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
 
 
 def test_router_recommends_openai_agents_sdk_target():

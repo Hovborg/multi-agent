@@ -6,18 +6,28 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
+    name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -39,40 +49,58 @@ jobs:
           --min-forbidden-score 1.0
           --min-risk-score 1.0
           --min-context-score 1.0
+          --min-policy-score 1.0
+
+      - name: Validate catalog
+        run: multiagent validate
 
   validate-catalog:
+    name: Validate catalog
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install pyyaml
+        run: pip install .
 
       - name: Validate all YAML agent definitions
+        run: multiagent validate
+
+  package-smoke:
+    name: Package smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Build distributions
         run: |
-          python -c "
-          import yaml
-          from pathlib import Path
-          errors = []
-          for f in Path('catalog').rglob('*.yaml'):
-              if '_enhancements' in f.parts:
-                  continue
-              try:
-                  data = yaml.safe_load(f.read_text())
-                  assert 'name' in data, f'{f}: missing name'
-                  assert 'description' in data, f'{f}: missing description'
-                  assert 'system_prompt' in data, f'{f}: missing system_prompt'
-                  assert 'category' in data, f'{f}: missing category'
-                  print(f'  OK: {f}')
-              except Exception as e:
-                  errors.append(f'{f}: {e}')
-                  print(f'  FAIL: {f}: {e}')
-          if errors:
-              raise SystemExit(f'{len(errors)} validation errors')
-          print(f'All catalog files valid')
-          "
+          python -m pip install build
+          python -m build
+
+      - name: Verify and install wheel
+        run: |
+          python -c "import glob, zipfile; wheel=glob.glob('dist/*.whl')[0]; names=zipfile.ZipFile(wheel).namelist(); yamls=[n for n in names if n.startswith('multiagent/catalog_data/') and n.endswith('.yaml')]; assert len(yamls) == 56, len(yamls)"
+          python -m venv /tmp/multi-agent-smoke
+          /tmp/multi-agent-smoke/bin/pip install dist/*.whl
+
+      - name: End-to-end installed CLI smoke test
+        working-directory: /tmp
+        run: |
+          /tmp/multi-agent-smoke/bin/multiagent validate
+          /tmp/multi-agent-smoke/bin/multiagent list | grep "48 agents"
+          /tmp/multi-agent-smoke/bin/multiagent route "research current agent frameworks" --json > route.json
+          /tmp/multi-agent-smoke/bin/python -c "import json; p=json.load(open('route.json')); assert p['dry_run'] is True; assert 1 <= p['policy']['max_delegates'] <= 5"

@@ -89,35 +89,27 @@ catalog = Catalog()
 reviewer = catalog.load("code/code-reviewer")
 test_writer = catalog.load("code/test-writer")
 
-# Compose with a pattern
+# Describe a portable pattern; execution belongs to a framework adapter
 team = patterns.supervisor_worker(
     supervisor=reviewer,
     workers=[test_writer],
     model="claude-sonnet-4-6"  # or any model
 )
-
-result = team.run("Review this PR and write missing tests", context={
-    "diff": open("changes.diff").read()
-})
+print(team.describe())
 ```
 
 ### 3. Or use with your favorite framework
 
 ```python
-# CrewAI adapter
-from multiagent.adapters import crewai
-crew = crewai.from_catalog(["code/code-reviewer", "code/test-writer"])
-result = crew.kickoff()
-
-# LangGraph adapter
-from multiagent.adapters import langgraph
-graph = langgraph.from_catalog(["research/deep-researcher", "research/fact-checker"])
-result = graph.invoke({"query": "Latest AI agent frameworks"})
-
-# OpenAI Agents SDK adapter
+# Build a framework-neutral OpenAI agent-as-tool plan without importing its SDK
 from multiagent.adapters import openai_sdk
+plan = openai_sdk.to_agent_tool_config(reviewer, [test_writer])
+
+# Optional runtime adapters create native objects when their extras are installed
+# pip install "multi-agent[openai]"
 agent = openai_sdk.from_catalog("code/code-reviewer")
-result = agent.run("Review this code")
+# from agents import Runner
+# result = Runner.run_sync(agent, "Review this code")
 ```
 
 ### 4. Export to any AI platform
@@ -182,24 +174,30 @@ multiagent eval-routing \
   --min-target-score 0.95 \
   --min-forbidden-score 1.0 \
   --min-risk-score 1.0 \
-  --min-context-score 1.0
+  --min-context-score 1.0 \
+  --min-policy-score 1.0
+
+# Validate all schemas, slugs, duplicate names, and cross-agent references
+multiagent validate
 
 # Route directly into a framework-native plan instead of a file export
 multiagent route "review this PR and write missing tests" --target openai-agents --json
 multiagent route "research three sources with Google ADK" --target adk --json
 ```
 
-Route JSON includes `risk` and `context` blocks. Use them to gate side effects,
-human review, and large context loads before turning a dry-run plan into
-execution. See [08 -- Human Review Gates](cookbook/08-human-review-gates.md)
-for a concrete policy example.
+Route JSON includes `risk`, `context`, and `policy` blocks. The policy makes
+control mode, bounded fan-out, delegation contracts, trust boundaries, approval
+requirements, and stop conditions explicit. This command is a dry run: it never
+executes an agent or contacts a model provider. See
+[08 -- Human Review Gates](cookbook/08-human-review-gates.md) and
+[09 -- Safe Delegation Policy](cookbook/09-safe-delegation-policy.md).
 
 ## Agent Catalog
 
 Every agent is defined in a simple, readable YAML format:
 
 ```yaml
-# catalog/code/code-reviewer.yaml
+# src/multiagent/catalog_data/code/code-reviewer.yaml
 name: code-reviewer
 version: "1.0"
 description: Reviews code changes for bugs, security issues, and style violations
@@ -262,17 +260,17 @@ protocols:
 
 | Category | Agents | Description |
 |----------|--------|-------------|
-| **[code/](catalog/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | Software development lifecycle |
-| **[research/](catalog/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | Research and analysis |
-| **[data/](catalog/data/)** | `data-analyst` `sql-generator` `report-writer` | Data engineering and analysis |
-| **[devops/](catalog/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | Infrastructure and operations |
-| **[content/](catalog/content/)** | `writer` `editor` `translator` `seo-optimizer` | Content creation pipeline |
-| **[finance/](catalog/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | Financial analysis and compliance |
-| **[support/](catalog/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | Customer service pipeline |
-| **[legal/](catalog/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | Legal and compliance |
-| **[personal/](catalog/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | Personal productivity |
-| **[security/](catalog/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | Security operations |
-| **[orchestration/](catalog/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | Meta-agents for coordination |
+| **[code/](src/multiagent/catalog_data/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | Software development lifecycle |
+| **[research/](src/multiagent/catalog_data/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | Research and analysis |
+| **[data/](src/multiagent/catalog_data/data/)** | `data-analyst` `sql-generator` `report-writer` | Data engineering and analysis |
+| **[devops/](src/multiagent/catalog_data/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | Infrastructure and operations |
+| **[content/](src/multiagent/catalog_data/content/)** | `writer` `editor` `translator` `seo-optimizer` | Content creation pipeline |
+| **[finance/](src/multiagent/catalog_data/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | Financial analysis and compliance |
+| **[support/](src/multiagent/catalog_data/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | Customer service pipeline |
+| **[legal/](src/multiagent/catalog_data/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | Legal and compliance |
+| **[personal/](src/multiagent/catalog_data/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | Personal productivity |
+| **[security/](src/multiagent/catalog_data/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | Security operations |
+| **[orchestration/](src/multiagent/catalog_data/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | Meta-agents for coordination |
 
 ## Patterns
 
@@ -332,12 +330,12 @@ Eight battle-tested orchestration patterns, each with runnable examples:
 
 | Framework | Adapter | Current scope |
 |-----------|---------|---------------|
-| [CrewAI](docs/frameworks/crewai.md) | `multiagent.adapters.crewai` | Agent/Crew conversion; Flow template config |
-| [LangGraph](docs/frameworks/langgraph.md) | `multiagent.adapters.langgraph` | Node/flow config conversion |
-| [OpenAI Agents SDK](docs/frameworks/openai-sdk.md) | `multiagent.adapters.openai_sdk` | Agent conversion; handoff and agent-as-tool plans |
-| [Claude Agent SDK](docs/frameworks/claude-sdk.md) | `multiagent.adapters.claude_sdk` | Message/subagent config conversion |
-| [Google ADK](docs/frameworks/google-adk.md) | `multiagent.adapters.google_adk` | ADK config conversion; sequential/parallel workflow plans |
-| [smolagents](docs/frameworks/smolagents.md) | `multiagent.adapters.smolagents` | Agent config conversion; manager/managed-agent plans |
+| [CrewAI](docs/frameworks/comparison.md) | `multiagent.adapters.crewai` | Agent/Crew conversion; Flow template config |
+| [LangGraph](docs/frameworks/comparison.md) | `multiagent.adapters.langgraph` | Node/flow config conversion |
+| [OpenAI Agents SDK](docs/frameworks/comparison.md) | `multiagent.adapters.openai_sdk` | Agent conversion; handoff and agent-as-tool plans |
+| [Claude Agent SDK](docs/frameworks/comparison.md) | `multiagent.adapters.claude_sdk` | Message/subagent config conversion |
+| [Google ADK](docs/frameworks/comparison.md) | `multiagent.adapters.google_adk` | ADK config conversion; sequential/parallel workflow plans |
+| [smolagents](docs/frameworks/comparison.md) | `multiagent.adapters.smolagents` | Agent config conversion; manager/managed-agent plans |
 
 Adapter template helpers return plain dictionaries, so they can be inspected,
 tested, or translated into framework code before any framework package is
@@ -462,13 +460,9 @@ from multiagent import Catalog, CostEstimator
 catalog = Catalog()
 team = catalog.load_team(["code/code-reviewer", "code/test-writer", "code/refactorer"])
 
-estimate = CostEstimator.estimate(team, input_tokens=5000)
+estimate = CostEstimator.estimate_team(team, extra_input_tokens=5000)
 print(estimate)
-# CostEstimate(
-#   model="claude-haiku-4-5",   total_usd=0.009,  tokens=~8000
-#   model="claude-sonnet-4-6",  total_usd=0.045,  tokens=~8000  
-#   model="gpt-4o",             total_usd=0.060,  tokens=~8000
-# )
+# Cost estimate for: code/code-reviewer, code/test-writer, code/refactorer
 ```
 
 ## Examples
@@ -480,7 +474,6 @@ print(estimate)
 | [Code Review Team](examples/real_world/code_review_team.py) | Supervisor/Worker | CrewAI, Claude | Automated PR review pipeline |
 | [Research Pipeline](examples/real_world/research_pipeline.py) | Parallel + Sequential | LangGraph | Multi-source research with fact-checking |
 | [Content Factory](examples/real_world/content_factory.py) | Sequential | CrewAI | Writer → Editor → SEO → Publisher |
-| [Incident Response](examples/real_world/incident_response.py) | DAG | LangGraph | Automated incident triage and remediation |
 
 ## Architecture
 
@@ -527,6 +520,7 @@ graph TB
 - [x] Agent evaluation CLI and routing corpus gates
 - [x] Static playground, catalog browser, and composition visualizer
 - [x] Dry-run governance metadata and human-review gates
+- [x] Packaged catalog validation and bounded delegation policies
 - [ ] Benchmarks per orchestration pattern
 - [ ] Shared team memory integration
 - [ ] Agent marketplace (community submissions)

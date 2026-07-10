@@ -1,10 +1,8 @@
 """Tests for the smart prompt enhancement system."""
 
-from pathlib import Path
-
 import pytest
 
-from multiagent.catalog import Catalog
+from multiagent.catalog import CATALOG_DIR, Catalog
 from multiagent.enhance import (
     ALL_ENHANCEMENTS,
     CATEGORY_PROFILES,
@@ -12,8 +10,6 @@ from multiagent.enhance import (
     enhance_prompt,
     list_enhancements,
 )
-
-CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
 
 
 @pytest.fixture

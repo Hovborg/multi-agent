@@ -9,7 +9,7 @@ Thank you for your interest in contributing! This project thrives on community c
 The most impactful contribution is adding new agent definitions.
 
 1. Fork the repo and create a branch: `git checkout -b add-agent/my-agent`
-2. Create a YAML file in the appropriate `catalog/` subdirectory
+2. Create a YAML file in the appropriate `src/multiagent/catalog_data/` subdirectory
 3. Follow the [agent definition format](#agent-definition-format)
 4. Add tests if applicable
 5. Submit a PR
@@ -77,6 +77,7 @@ recommended_patterns:
 git clone https://github.com/Hovborg/multi-agent.git
 cd multi-agent
 pip install -e ".[dev]"
+multiagent validate
 pytest
 ```
 
@@ -90,6 +91,7 @@ pytest
 ```bash
 ruff check .
 ruff format .
+multiagent validate
 pytest
 ```
 
