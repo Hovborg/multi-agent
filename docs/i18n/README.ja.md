@@ -124,17 +124,17 @@ result = agent.run("Review this code")
 
 | カテゴリ | エージェント | 説明 |
 |----------|-------------|------|
-| **[code/](../../catalog/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | ソフトウェア開発ライフサイクル |
-| **[research/](../../catalog/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | リサーチと分析 |
-| **[data/](../../catalog/data/)** | `data-analyst` `sql-generator` `report-writer` | データエンジニアリングと分析 |
-| **[devops/](../../catalog/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | インフラとオペレーション |
-| **[content/](../../catalog/content/)** | `writer` `editor` `translator` `seo-optimizer` | コンテンツ制作パイプライン |
-| **[finance/](../../catalog/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | 金融分析とコンプライアンス |
-| **[support/](../../catalog/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | カスタマーサービスパイプライン |
-| **[legal/](../../catalog/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | 法務とコンプライアンス |
-| **[personal/](../../catalog/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | パーソナル生産性向上 |
-| **[security/](../../catalog/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | セキュリティオペレーション |
-| **[orchestration/](../../catalog/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | 調整用メタエージェント |
+| **[code/](../../src/multiagent/catalog_data/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | ソフトウェア開発ライフサイクル |
+| **[research/](../../src/multiagent/catalog_data/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | リサーチと分析 |
+| **[data/](../../src/multiagent/catalog_data/data/)** | `data-analyst` `sql-generator` `report-writer` | データエンジニアリングと分析 |
+| **[devops/](../../src/multiagent/catalog_data/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | インフラとオペレーション |
+| **[content/](../../src/multiagent/catalog_data/content/)** | `writer` `editor` `translator` `seo-optimizer` | コンテンツ制作パイプライン |
+| **[finance/](../../src/multiagent/catalog_data/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | 金融分析とコンプライアンス |
+| **[support/](../../src/multiagent/catalog_data/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | カスタマーサービスパイプライン |
+| **[legal/](../../src/multiagent/catalog_data/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | 法務とコンプライアンス |
+| **[personal/](../../src/multiagent/catalog_data/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | パーソナル生産性向上 |
+| **[security/](../../src/multiagent/catalog_data/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | セキュリティオペレーション |
+| **[orchestration/](../../src/multiagent/catalog_data/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | 調整用メタエージェント |
 
 ## スマート強化
 

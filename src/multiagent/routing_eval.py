@@ -27,6 +27,7 @@ class RoutingEvalCase:
     forbidden_agents: tuple[str, ...] = ()
     expected_risk: dict[str, Any] | None = None
     expected_context: dict[str, Any] | None = None
+    expected_policy: dict[str, Any] | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> RoutingEvalCase:
@@ -42,6 +43,7 @@ class RoutingEvalCase:
             forbidden_agents=tuple(str(agent) for agent in data.get("forbidden_agents", [])),
             expected_risk=data.get("expected_risk"),
             expected_context=data.get("expected_context"),
+            expected_policy=data.get("expected_policy"),
         )
 
 
@@ -55,6 +57,7 @@ class RoutingEvalResult:
     actual_target: str
     actual_risk: dict[str, Any]
     actual_context: dict[str, Any]
+    actual_policy: dict[str, Any]
 
     @property
     def agent_match(self) -> bool:
@@ -81,6 +84,10 @@ class RoutingEvalResult:
         return _context_matches(self.actual_context, self.case.expected_context)
 
     @property
+    def policy_match(self) -> bool:
+        return _policy_matches(self.actual_policy, self.case.expected_policy)
+
+    @property
     def passed(self) -> bool:
         return (
             self.agent_match
@@ -89,6 +96,7 @@ class RoutingEvalResult:
             and self.forbidden_match
             and self.risk_match
             and self.context_match
+            and self.policy_match
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -113,6 +121,9 @@ class RoutingEvalResult:
             "expected_context": self.case.expected_context or {},
             "actual_context": self.actual_context,
             "context_match": self.context_match,
+            "expected_policy": self.case.expected_policy or {},
+            "actual_policy": self.actual_policy,
+            "policy_match": self.policy_match,
         }
 
 
@@ -143,6 +154,7 @@ class RoutingEvalThresholds:
     forbidden_match_rate: float | None = None
     risk_match_rate: float | None = None
     context_match_rate: float | None = None
+    policy_match_rate: float | None = None
 
     def configured(self) -> dict[str, float]:
         """Return only thresholds that were explicitly configured."""
@@ -156,6 +168,7 @@ class RoutingEvalThresholds:
                 "forbidden_match_rate": self.forbidden_match_rate,
                 "risk_match_rate": self.risk_match_rate,
                 "context_match_rate": self.context_match_rate,
+                "policy_match_rate": self.policy_match_rate,
             }.items()
             if value is not None
         }
@@ -198,6 +211,7 @@ class RoutingEvalReport:
             "forbidden_match_rate": self._match_rate("forbidden_match"),
             "risk_match_rate": self._match_rate("risk_match"),
             "context_match_rate": self._match_rate("context_match"),
+            "policy_match_rate": self._match_rate("policy_match"),
         }
 
     def to_dict(self) -> dict[str, Any]:
@@ -262,6 +276,7 @@ def evaluate_routing_corpus(
                 actual_target=rec.suggested_target,
                 actual_risk=rec.risk,
                 actual_context=rec.context,
+                actual_policy=rec.policy,
             )
         )
     return RoutingEvalReport(results=tuple(results))
@@ -300,6 +315,25 @@ def _context_matches(actual: dict[str, Any], expected: dict[str, Any] | None) ->
 
     loading = expected.get("loading")
     if loading is not None and actual.get("loading") != loading:
+        return False
+
+    return True
+
+
+def _policy_matches(actual: dict[str, Any], expected: dict[str, Any] | None) -> bool:
+    if not expected:
+        return True
+
+    for key in ("control_mode", "parallelizable", "approval_required"):
+        if key in expected and actual.get(key) != expected[key]:
+            return False
+
+    maximum = expected.get("max_delegates_at_most")
+    if maximum is not None and int(actual.get("max_delegates", 0)) > int(maximum):
+        return False
+
+    minimum = expected.get("max_delegates_at_least")
+    if minimum is not None and int(actual.get("max_delegates", 0)) < int(minimum):
         return False
 
     return True

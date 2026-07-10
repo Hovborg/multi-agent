@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import yaml
+from multiagent.validation import CatalogError, CatalogValidationError, load_agent_data
 
-logger = logging.getLogger(__name__)
-
-CATALOG_DIR = Path(__file__).resolve().parent.parent.parent / "catalog"
+CATALOG_DIR = Path(__file__).resolve().parent / "catalog_data"
 
 
 @dataclass
@@ -50,7 +47,7 @@ class AgentDefinition:
     @classmethod
     def from_yaml(cls, path: Path) -> AgentDefinition:
         """Load an agent definition from a YAML file."""
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data = load_agent_data(path)
         cost_data = data.get("cost_profile", {})
         cost_profile = CostProfile(
             input_tokens_per_run=cost_data.get("input_tokens_per_run", 2000),
@@ -60,7 +57,7 @@ class AgentDefinition:
         )
         return cls(
             name=data["name"],
-            version=data.get("version", "1.0"),
+            version=str(data.get("version", "1.0")),
             description=data.get("description", ""),
             category=data.get("category", ""),
             tags=data.get("tags", []),
@@ -95,16 +92,18 @@ class Catalog:
     def _ensure_loaded(self) -> None:
         if self._loaded:
             return
-        for yaml_file in self._dir.rglob("*.yaml"):
+        if not self._dir.is_dir():
+            raise CatalogValidationError(f"Catalog directory does not exist: {self._dir}")
+        for yaml_file in sorted(self._dir.rglob("*.yaml")):
             # Skip internal directories (enhancements, templates, etc.)
             if any(part.startswith("_") for part in yaml_file.relative_to(self._dir).parts):
                 continue
-            try:
-                agent = AgentDefinition.from_yaml(yaml_file)
-                self._agents[agent.full_name] = agent
-            except (yaml.YAMLError, KeyError) as err:
-                logger.warning("Skipping agent catalog file %s: %s", yaml_file, err)
-                continue
+            agent = AgentDefinition.from_yaml(yaml_file)
+            if agent.full_name in self._agents:
+                raise CatalogValidationError(
+                    f"Duplicate agent '{agent.full_name}' in {yaml_file}"
+                )
+            self._agents[agent.full_name] = agent
         self._loaded = True
 
     def load(self, name: str) -> AgentDefinition:
@@ -112,11 +111,32 @@ class Catalog:
         self._ensure_loaded()
         if name in self._agents:
             return self._agents[name]
-        # Try partial match
-        for key, agent in self._agents.items():
-            if key.endswith(f"/{name}") or agent.name == name:
-                return agent
-        raise KeyError(f"Agent '{name}' not found in catalog. Available: {list(self._agents)}")
+        matches = [
+            agent
+            for key, agent in self._agents.items()
+            if key.endswith(f"/{name}") or agent.name == name
+        ]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            candidates = ", ".join(agent.full_name for agent in matches)
+            raise CatalogValidationError(f"Ambiguous agent '{name}'. Matches: {candidates}")
+        raise CatalogError(
+            f"Agent '{name}' not found in catalog. Available: {list(self._agents)}"
+        )
+
+    def validate(self) -> list[str]:
+        """Return cross-definition validation errors for the complete catalog."""
+        self._ensure_loaded()
+        known_agents = set(self._agents)
+        errors: list[str] = []
+        for agent in self.list_all():
+            for reference in agent.works_with:
+                if reference not in known_agents:
+                    errors.append(
+                        f"{agent.full_name}: unknown works_with reference '{reference}'"
+                    )
+        return errors
 
     def load_team(self, names: list[str]) -> list[AgentDefinition]:
         """Load multiple agents as a team."""

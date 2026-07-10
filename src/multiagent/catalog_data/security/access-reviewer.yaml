@@ -83,8 +83,8 @@ works_with:
   - security/vulnerability-scanner
   - security/log-analyzer
   - security/incident-analyst
-  - devops/infrastructure-monitor
-  - compliance/audit-assistant
+  - devops/monitoring-agent
+  - legal/compliance-checker
 
 recommended_patterns:
   - name: sequential

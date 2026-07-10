@@ -89,52 +89,56 @@ catalog = Catalog()
 reviewer = catalog.load("code/code-reviewer")
 test_writer = catalog.load("code/test-writer")
 
-# Kombiner med et moenster
+# Beskriv et portabelt moenster; eksekvering sker i en framework-adapter
 team = patterns.supervisor_worker(
     supervisor=reviewer,
     workers=[test_writer],
     model="claude-sonnet-4-6"  # eller enhver model
 )
 
-result = team.run("Review this PR and write missing tests", context={
-    "diff": open("changes.diff").read()
-})
+print(team.describe())
 ```
 
 ### 3. Eller brug med dit foretrukne framework
 
 ```python
-# CrewAI-adapter
-from multiagent.adapters import crewai
-crew = crewai.from_catalog(["code/code-reviewer", "code/test-writer"])
-result = crew.kickoff()
-
-# LangGraph-adapter
-from multiagent.adapters import langgraph
-graph = langgraph.from_catalog(["research/deep-researcher", "research/fact-checker"])
-result = graph.invoke({"query": "Latest AI agent frameworks"})
-
-# OpenAI Agents SDK-adapter
+# Byg en framework-neutral agent-as-tool-plan uden at importere SDK'et
 from multiagent.adapters import openai_sdk
+plan = openai_sdk.to_agent_tool_config(reviewer, [test_writer])
+
+# Valgfrie runtime-adaptere laver native objekter, naar deres extras er installeret
+# pip install "multi-agent[openai]"
 agent = openai_sdk.from_catalog("code/code-reviewer")
-result = agent.run("Review this code")
+# from agents import Runner
+# result = Runner.run_sync(agent, "Review this code")
 ```
+
+### Valider og route sikkert
+
+```bash
+multiagent validate
+multiagent route "undersoeg og sammenlign aktuelle agent-frameworks" --json
+multiagent eval-routing --min-policy-score 1.0
+```
+
+`route` er altid dry-run og returnerer `risk`, `context` og `policy`. Den kalder
+ingen model og udfoerer ingen side effects.
 
 ## Agent-katalog
 
 | Kategori | Agenter | Beskrivelse |
 |----------|---------|-------------|
-| **[code/](../../catalog/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | Softwareudviklingens livscyklus |
-| **[research/](../../catalog/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | Research og analyse |
-| **[data/](../../catalog/data/)** | `data-analyst` `sql-generator` `report-writer` | Data engineering og analyse |
-| **[devops/](../../catalog/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | Infrastruktur og drift |
-| **[content/](../../catalog/content/)** | `writer` `editor` `translator` `seo-optimizer` | Indholdsproduktions-pipeline |
-| **[finance/](../../catalog/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | Finansanalyse og compliance |
-| **[support/](../../catalog/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | Kundeservice-pipeline |
-| **[legal/](../../catalog/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | Jura og compliance |
-| **[personal/](../../catalog/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | Personlig produktivitet |
-| **[security/](../../catalog/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | Sikkerhedsoperationer |
-| **[orchestration/](../../catalog/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | Meta-agenter til koordinering |
+| **[code/](../../src/multiagent/catalog_data/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | Softwareudviklingens livscyklus |
+| **[research/](../../src/multiagent/catalog_data/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | Research og analyse |
+| **[data/](../../src/multiagent/catalog_data/data/)** | `data-analyst` `sql-generator` `report-writer` | Data engineering og analyse |
+| **[devops/](../../src/multiagent/catalog_data/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | Infrastruktur og drift |
+| **[content/](../../src/multiagent/catalog_data/content/)** | `writer` `editor` `translator` `seo-optimizer` | Indholdsproduktions-pipeline |
+| **[finance/](../../src/multiagent/catalog_data/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | Finansanalyse og compliance |
+| **[support/](../../src/multiagent/catalog_data/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | Kundeservice-pipeline |
+| **[legal/](../../src/multiagent/catalog_data/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | Jura og compliance |
+| **[personal/](../../src/multiagent/catalog_data/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | Personlig produktivitet |
+| **[security/](../../src/multiagent/catalog_data/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | Sikkerhedsoperationer |
+| **[orchestration/](../../src/multiagent/catalog_data/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | Meta-agenter til koordinering |
 
 ## Smarte Forbedringer
 

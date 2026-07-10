@@ -17,6 +17,7 @@ import json
 from pathlib import Path
 
 from multiagent.catalog import AgentDefinition
+from multiagent.validation import is_safe_slug
 
 
 def to_claude_code(agent: AgentDefinition) -> str:
@@ -308,6 +309,8 @@ def export_agent(
     content = EXPORTERS[target](agent)
 
     if output_dir:
+        if not is_safe_slug(agent.name):
+            raise ValueError("Agent name must be a safe slug before file export")
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 

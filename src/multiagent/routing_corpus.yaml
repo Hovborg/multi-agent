@@ -34,6 +34,10 @@ cases:
     expected_agents: [research/deep-researcher]
     expected_pattern: parallel
     expected_target: adk
+    expected_policy:
+      control_mode: router
+      parallelizable: true
+      max_delegates_at_most: 5
   - id: scrape-a2a
     task: Scrape product listings and publish an A2A agent card.
     expected_agents: [research/web-scraper]
@@ -126,6 +130,10 @@ cases:
     expected_agents: [support/customer-support, support/ticket-router]
     expected_pattern: handoff
     expected_target: a2a-agent-card
+    expected_policy:
+      control_mode: handoff
+      parallelizable: false
+      max_delegates_at_most: 1
   - id: faq-chatgpt
     task: Build an FAQ knowledge base for ChatGPT.
     expected_agents: [support/knowledge-base-builder]
@@ -149,6 +157,8 @@ cases:
     expected_risk:
       min_side_effect_risk: medium
       requires_human_review: true
+    expected_policy:
+      approval_required: true
   - id: vulnerability-raw
     task: Vulnerability scan and log analysis as a raw prompt.
     expected_agents: [security/vulnerability-scanner, security/log-analyzer]

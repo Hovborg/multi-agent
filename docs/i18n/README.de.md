@@ -124,17 +124,17 @@ result = agent.run("Review this code")
 
 | Kategorie | Agenten | Beschreibung |
 |-----------|---------|--------------|
-| **[code/](../../catalog/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | Software-Entwicklungslebenszyklus |
-| **[research/](../../catalog/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | Recherche und Analyse |
-| **[data/](../../catalog/data/)** | `data-analyst` `sql-generator` `report-writer` | Daten-Engineering und -Analyse |
-| **[devops/](../../catalog/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | Infrastruktur und Betrieb |
-| **[content/](../../catalog/content/)** | `writer` `editor` `translator` `seo-optimizer` | Content-Erstellungs-Pipeline |
-| **[finance/](../../catalog/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | Finanzanalyse und Compliance |
-| **[support/](../../catalog/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | Kundenservice-Pipeline |
-| **[legal/](../../catalog/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | Recht und Compliance |
-| **[personal/](../../catalog/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | Persoenliche Produktivitaet |
-| **[security/](../../catalog/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | Sicherheitsoperationen |
-| **[orchestration/](../../catalog/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | Meta-Agenten zur Koordination |
+| **[code/](../../src/multiagent/catalog_data/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | Software-Entwicklungslebenszyklus |
+| **[research/](../../src/multiagent/catalog_data/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | Recherche und Analyse |
+| **[data/](../../src/multiagent/catalog_data/data/)** | `data-analyst` `sql-generator` `report-writer` | Daten-Engineering und -Analyse |
+| **[devops/](../../src/multiagent/catalog_data/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | Infrastruktur und Betrieb |
+| **[content/](../../src/multiagent/catalog_data/content/)** | `writer` `editor` `translator` `seo-optimizer` | Content-Erstellungs-Pipeline |
+| **[finance/](../../src/multiagent/catalog_data/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | Finanzanalyse und Compliance |
+| **[support/](../../src/multiagent/catalog_data/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | Kundenservice-Pipeline |
+| **[legal/](../../src/multiagent/catalog_data/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | Recht und Compliance |
+| **[personal/](../../src/multiagent/catalog_data/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | Persoenliche Produktivitaet |
+| **[security/](../../src/multiagent/catalog_data/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | Sicherheitsoperationen |
+| **[orchestration/](../../src/multiagent/catalog_data/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | Meta-Agenten zur Koordination |
 
 ## Smarte Verbesserungen
 

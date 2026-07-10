@@ -1,20 +1,51 @@
 """Tests for the agent catalog."""
 
-from pathlib import Path
-
 import pytest
 
-from multiagent.catalog import Catalog
+from multiagent.catalog import CATALOG_DIR, Catalog, CatalogValidationError
 from multiagent.cost import MODEL_PRICING, CostEstimator
 from multiagent.router import AgentRouter
 
-CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
+
+def _agent_yaml(
+    *,
+    name: str,
+    category: str,
+    tags: object | None = None,
+    safety: dict | None = None,
+    context: dict | None = None,
+    works_with: list[str] | None = None,
+) -> str:
+    import yaml
+
+    return yaml.safe_dump(
+        {
+            "name": name,
+            "version": "1.0",
+            "description": "Test agent",
+            "category": category,
+            "tags": ["test"] if tags is None else tags,
+            "system_prompt": "Test safely.",
+            "tools": [],
+            "parameters": {},
+            "cost_profile": {},
+            "works_with": works_with or [],
+            "recommended_patterns": [],
+            "safety": safety or {},
+            "context": context or {},
+        },
+        sort_keys=False,
+    )
 
 
 class TestCatalog:
     def test_load_catalog(self):
         catalog = Catalog(CATALOG_DIR)
         assert len(catalog) > 0
+
+    def test_missing_catalog_directory_is_an_error(self, tmp_path):
+        with pytest.raises(CatalogValidationError, match="Catalog directory does not exist"):
+            len(Catalog(tmp_path / "missing"))
 
     def test_list_categories(self):
         catalog = Catalog(CATALOG_DIR)
@@ -38,6 +69,77 @@ class TestCatalog:
         catalog = Catalog(CATALOG_DIR)
         with pytest.raises(KeyError):
             catalog.load("nonexistent/agent")
+
+    def test_rejects_ambiguous_short_name(self, tmp_path):
+        for category in ("code", "security"):
+            agent_dir = tmp_path / category
+            agent_dir.mkdir()
+            (agent_dir / "reviewer.yaml").write_text(
+                _agent_yaml(name="reviewer", category=category),
+                encoding="utf-8",
+            )
+
+        with pytest.raises(CatalogValidationError, match="Ambiguous agent 'reviewer'"):
+            Catalog(tmp_path).load("reviewer")
+
+    def test_rejects_duplicate_full_name(self, tmp_path):
+        agent_dir = tmp_path / "code"
+        agent_dir.mkdir()
+        for filename in ("first.yaml", "second.yaml"):
+            (agent_dir / filename).write_text(
+                _agent_yaml(name="reviewer", category="code"),
+                encoding="utf-8",
+            )
+
+        with pytest.raises(CatalogValidationError, match="Duplicate agent 'code/reviewer'"):
+            len(Catalog(tmp_path))
+
+    @pytest.mark.parametrize(
+        ("content", "message"),
+        [
+            ("- not-a-mapping\n", "YAML root must be a mapping"),
+            (_agent_yaml(name="../escape", category="code"), "name"),
+            (_agent_yaml(name="reviewer", category="Code Team"), "category"),
+            (_agent_yaml(name="reviewer", category="code", tags="wrong"), "tags"),
+            (
+                _agent_yaml(
+                    name="reviewer",
+                    category="code",
+                    safety={"side_effect_risk": "extreme"},
+                ),
+                "safety.side_effect_risk",
+            ),
+            (
+                _agent_yaml(
+                    name="reviewer",
+                    category="code",
+                    context={"loading": "eager"},
+                ),
+                "context.loading",
+            ),
+        ],
+    )
+    def test_rejects_invalid_agent_schema(self, tmp_path, content, message):
+        path = tmp_path / "invalid.yaml"
+        path.write_text(content, encoding="utf-8")
+
+        with pytest.raises(CatalogValidationError, match=message):
+            len(Catalog(tmp_path))
+
+    def test_validate_reports_broken_companion_reference(self, tmp_path):
+        path = tmp_path / "reviewer.yaml"
+        path.write_text(
+            _agent_yaml(
+                name="reviewer",
+                category="code",
+                works_with=["code/missing"],
+            ),
+            encoding="utf-8",
+        )
+
+        errors = Catalog(tmp_path).validate()
+
+        assert errors == ["code/reviewer: unknown works_with reference 'code/missing'"]
 
     def test_search(self):
         catalog = Catalog(CATALOG_DIR)

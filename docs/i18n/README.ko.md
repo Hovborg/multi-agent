@@ -124,17 +124,17 @@ result = agent.run("Review this code")
 
 | 카테고리 | 에이전트 | 설명 |
 |----------|----------|------|
-| **[code/](../../catalog/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | 소프트웨어 개발 라이프사이클 |
-| **[research/](../../catalog/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | 리서치 및 분석 |
-| **[data/](../../catalog/data/)** | `data-analyst` `sql-generator` `report-writer` | 데이터 엔지니어링 및 분석 |
-| **[devops/](../../catalog/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | 인프라 및 운영 |
-| **[content/](../../catalog/content/)** | `writer` `editor` `translator` `seo-optimizer` | 콘텐츠 제작 파이프라인 |
-| **[finance/](../../catalog/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | 금융 분석 및 컴플라이언스 |
-| **[support/](../../catalog/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | 고객 서비스 파이프라인 |
-| **[legal/](../../catalog/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | 법률 및 컴플라이언스 |
-| **[personal/](../../catalog/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | 개인 생산성 도구 |
-| **[security/](../../catalog/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | 보안 운영 |
-| **[orchestration/](../../catalog/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | 조정용 메타 에이전트 |
+| **[code/](../../src/multiagent/catalog_data/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | 소프트웨어 개발 라이프사이클 |
+| **[research/](../../src/multiagent/catalog_data/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | 리서치 및 분석 |
+| **[data/](../../src/multiagent/catalog_data/data/)** | `data-analyst` `sql-generator` `report-writer` | 데이터 엔지니어링 및 분석 |
+| **[devops/](../../src/multiagent/catalog_data/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | 인프라 및 운영 |
+| **[content/](../../src/multiagent/catalog_data/content/)** | `writer` `editor` `translator` `seo-optimizer` | 콘텐츠 제작 파이프라인 |
+| **[finance/](../../src/multiagent/catalog_data/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | 금융 분석 및 컴플라이언스 |
+| **[support/](../../src/multiagent/catalog_data/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | 고객 서비스 파이프라인 |
+| **[legal/](../../src/multiagent/catalog_data/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | 법률 및 컴플라이언스 |
+| **[personal/](../../src/multiagent/catalog_data/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | 개인 생산성 도구 |
+| **[security/](../../src/multiagent/catalog_data/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | 보안 운영 |
+| **[orchestration/](../../src/multiagent/catalog_data/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | 조정용 메타 에이전트 |
 
 ## 스마트 강화
 

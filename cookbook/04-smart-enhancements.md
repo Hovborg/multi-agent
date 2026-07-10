@@ -17,7 +17,7 @@ itself -- enhancements are appended to the system prompt automatically.
 ## How enhancements work
 
 Every agent in the catalog has a `system_prompt`. The `enhance_agent` function
-loads YAML enhancement blocks from `catalog/_enhancements/` and appends them to
+loads YAML enhancement blocks from `src/multiagent/catalog_data/_enhancements/` and appends them to
 the prompt. The original agent is never modified -- a new copy is returned.
 
 ```

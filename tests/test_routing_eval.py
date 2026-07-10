@@ -1,11 +1,10 @@
 """Tests for the routing evaluation corpus."""
 
 import json
-from pathlib import Path
 
 from click.testing import CliRunner
 
-from multiagent.catalog import Catalog
+from multiagent.catalog import CATALOG_DIR, Catalog
 from multiagent.cli import main
 from multiagent.routing_eval import (
     RoutingEvalCase,
@@ -13,8 +12,6 @@ from multiagent.routing_eval import (
     evaluate_routing_corpus,
     load_routing_corpus,
 )
-
-CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
 
 
 def test_loads_default_routing_corpus_with_expected_fields():
@@ -58,6 +55,11 @@ def test_default_corpus_contains_risk_and_context_expectations():
     assert cases_by_id["scrape-a2a"].expected_context == {
         "min_context_size_risk": "medium",
     }
+    assert cases_by_id["research-google-adk"].expected_policy == {
+        "control_mode": "router",
+        "parallelizable": True,
+        "max_delegates_at_most": 5,
+    }
 
 
 def test_default_routing_corpus_passes_against_current_router():
@@ -82,6 +84,7 @@ def test_report_exposes_failures_as_machine_readable_data():
         "forbidden_match_rate": 1.0,
         "risk_match_rate": 1.0,
         "context_match_rate": 1.0,
+        "policy_match_rate": 1.0,
     }
     assert payload["results"][0]["case_id"]
     assert payload["results"][0]["actual_agents"]
@@ -145,8 +148,11 @@ def test_eval_routing_cli_accepts_score_specific_thresholds():
             "1.0",
             "--min-context-score",
             "1.0",
+            "--min-policy-score",
+            "1.0",
         ],
     )
 
     assert result.exit_code == 0
     assert "agents 100%" in result.output
+    assert "policy 100%" in result.output

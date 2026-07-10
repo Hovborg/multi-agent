@@ -1,11 +1,7 @@
 """Tests for framework-specific adapter templates."""
 
-from pathlib import Path
-
 from multiagent.adapters import crewai, google_adk, openai_sdk, smolagents
-from multiagent.catalog import Catalog
-
-CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
+from multiagent.catalog import CATALOG_DIR, Catalog
 
 
 def test_openai_handoff_config():

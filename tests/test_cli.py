@@ -23,6 +23,8 @@ def test_route_json_outputs_machine_readable_decision():
     assert payload["reasons"]
     assert payload["risk"]["side_effect_risk"] in {"none", "low", "medium", "high"}
     assert payload["context"]["context_size_risk"] in {"low", "medium", "high"}
+    assert payload["policy"]["max_delegates"] >= 1
+    assert payload["policy"]["delegation_contract"]["objective"]
 
 
 def test_route_json_includes_target_export_plan():
@@ -89,3 +91,17 @@ def test_generate_web_data_cli_writes_static_catalog(tmp_path):
     assert content.startswith("const CATALOG_DATA = ")
     assert '"full_name": "personal/meeting-scheduler"' in content
     assert '"safety": {' in content
+
+
+def test_info_missing_agent_exits_non_zero():
+    result = CliRunner().invoke(main, ["info", "definitely-missing"])
+
+    assert result.exit_code != 0
+    assert "not found" in result.output
+
+
+def test_validate_command_accepts_bundled_catalog():
+    result = CliRunner().invoke(main, ["validate"])
+
+    assert result.exit_code == 0
+    assert "48 agents" in result.output

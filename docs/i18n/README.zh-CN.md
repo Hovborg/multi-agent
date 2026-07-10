@@ -124,17 +124,17 @@ result = agent.run("Review this code")
 
 | 类别 | 智能体 | 描述 |
 |------|--------|------|
-| **[code/](../../catalog/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | 软件开发全生命周期 |
-| **[research/](../../catalog/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | 研究与分析 |
-| **[data/](../../catalog/data/)** | `data-analyst` `sql-generator` `report-writer` | 数据工程与分析 |
-| **[devops/](../../catalog/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | 基础设施与运维 |
-| **[content/](../../catalog/content/)** | `writer` `editor` `translator` `seo-optimizer` | 内容创作流水线 |
-| **[finance/](../../catalog/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | 金融分析与合规 |
-| **[support/](../../catalog/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | 客户服务流水线 |
-| **[legal/](../../catalog/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | 法律与合规 |
-| **[personal/](../../catalog/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | 个人效率工具 |
-| **[security/](../../catalog/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | 安全运营 |
-| **[orchestration/](../../catalog/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | 协调用元智能体 |
+| **[code/](../../src/multiagent/catalog_data/code/)** | `code-reviewer` `code-generator` `test-writer` `refactorer` `debugger` `security-auditor` `documentation-writer` `pr-summarizer` | 软件开发全生命周期 |
+| **[research/](../../src/multiagent/catalog_data/research/)** | `deep-researcher` `web-scraper` `fact-checker` `paper-analyst` `competitive-intel` | 研究与分析 |
+| **[data/](../../src/multiagent/catalog_data/data/)** | `data-analyst` `sql-generator` `report-writer` | 数据工程与分析 |
+| **[devops/](../../src/multiagent/catalog_data/devops/)** | `ci-cd-agent` `infra-provisioner` `monitoring-agent` `incident-responder` | 基础设施与运维 |
+| **[content/](../../src/multiagent/catalog_data/content/)** | `writer` `editor` `translator` `seo-optimizer` | 内容创作流水线 |
+| **[finance/](../../src/multiagent/catalog_data/finance/)** | `trading-analyst` `portfolio-optimizer` `financial-reporter` `fraud-detector` `tax-advisor` | 金融分析与合规 |
+| **[support/](../../src/multiagent/catalog_data/support/)** | `customer-support` `ticket-router` `knowledge-base-builder` `escalation-agent` | 客户服务流水线 |
+| **[legal/](../../src/multiagent/catalog_data/legal/)** | `contract-reviewer` `legal-researcher` `compliance-checker` `document-drafter` | 法律与合规 |
+| **[personal/](../../src/multiagent/catalog_data/personal/)** | `email-assistant` `meeting-scheduler` `note-taker` `task-manager` | 个人效率工具 |
+| **[security/](../../src/multiagent/catalog_data/security/)** | `vulnerability-scanner` `log-analyzer` `access-reviewer` `incident-analyst` | 安全运营 |
+| **[orchestration/](../../src/multiagent/catalog_data/orchestration/)** | `task-router` `cost-optimizer` `quality-gate` | 协调用元智能体 |
 
 ## 智能增强
 

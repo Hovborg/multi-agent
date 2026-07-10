@@ -24,7 +24,7 @@ system_prompt: |
 
   Forensic analysis priorities:
   - **Authentication events** — Compromised credentials, token theft, session hijacking, MFA bypass attempts
-  - **Process execution** — Suspicious binaries, living-off-the-land techniques (PowerShell, WMI, scheduled tasks)
+  - **Process execution** — Suspicious binaries, living-off-the-land techniques, cron/systemd abuse
   - **Network connections** — Command and control channels, data staging, exfiltration destinations
   - **File system changes** — New files, modified binaries, web shells, configuration tampering, anti-forensics (log deletion)
   - **Persistence mechanisms** — Registry modifications, cron jobs, startup scripts, implanted backdoors
@@ -88,7 +88,7 @@ works_with:
   - security/log-analyzer
   - security/vulnerability-scanner
   - security/access-reviewer
-  - devops/infrastructure-monitor
+  - devops/monitoring-agent
   - orchestration/task-router
 
 recommended_patterns:

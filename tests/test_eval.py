@@ -1,13 +1,9 @@
 """Tests for the evaluation/benchmark system."""
 
-from pathlib import Path
-
 import pytest
 
-from multiagent.catalog import Catalog
+from multiagent.catalog import CATALOG_DIR, Catalog
 from multiagent.eval import benchmark_report, evaluate_agent, evaluate_catalog
-
-CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
 
 
 @pytest.fixture
