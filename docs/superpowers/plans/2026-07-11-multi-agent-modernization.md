@@ -171,4 +171,3 @@ Create terse commits, push `agent/modernize-multi-agent`, and open a draft PR ag
 - [ ] **Step 4: Verify remote state**
 
 Read the PR and GitHub Actions checks. Do not report completion until required checks pass or explicitly report any still-running/failed check as not verified.
-

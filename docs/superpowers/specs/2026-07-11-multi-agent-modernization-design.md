@@ -146,4 +146,3 @@ Completion requires, from a clean isolated environment:
 7. generated web-data parity check;
 8. repository secret and loose-end scans;
 9. final diff review and GitHub CI status after push.
-
