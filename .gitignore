@@ -18,3 +18,7 @@ venv/
 Thumbs.db
 .ai-sessions/
 .playwright-cli/
+
+# Suppleret af oprydningskonvention 2026-06-10
+node_modules/
+._*
